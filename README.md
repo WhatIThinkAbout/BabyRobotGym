@@ -12,7 +12,7 @@ To get up and running with this simple custom Gym Environment, do the following:
 
 ## 2. Create a Conda environment to hold the required packages:
 
-* <i>conda create - name BabyRobotGym</i>
+* <i>conda create --name BabyRobotGym</i>
 * <i>conda activate BabyRobotGym</i>
   
 (when you're finished playing with this environment run "<i>conda deactivate</i>" to get back out)
@@ -27,7 +27,7 @@ Run the <i>setup.py</i> and <i>environment.yml</i> files, which install Gym, the
 
 ## 4. Add this Conda environment as a Jupyter Notebook kernel:
 
-* <i>python -m ipykernel install - user - name=BabyRobotGym</i>
+* <i>python -m ipykernel install --user --name=BabyRobotGym</i>
 
 ## 5. Run the notebook:
 
