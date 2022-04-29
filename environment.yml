@@ -50,6 +50,7 @@ dependencies:
   - pcre=8.45
   - pexpect=4.8.0
   - pickleshare=0.7.5
+  - pip=21.2.4
   - prometheus_client=0.13.1
   - prompt-toolkit=3.0.20
   - prompt_toolkit=3.0.20
