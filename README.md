@@ -10,27 +10,32 @@ To get up and running with this simple custom Gym Environment, do the following:
 * <i>cd BabyRobotGym</i>
 
 
-## 2. Create a Conda environment to hold the required packages:
+## 2. Create a Conda environment and install the required packages:
 
-* <i>conda create --name BabyRobotGym</i>
+### On Unix:
+
+* <i>conda env create -f environment_unix.yml</i>
+
+### On Windows:
+
+* <i>conda env create -f environment_windows.yml</i>
+
+
+## 3. Activate the environment:
+
 * <i>conda activate BabyRobotGym</i>
   
 (when you're finished playing with this environment run "<i>conda deactivate</i>" to get back out)
 
 
-## 3. Make sure you have the required packages in your new environment:
+## 4. Run the test notebook:
 
-Run the <i>setup.py</i> and <i>environment.yml</i> files, which install Gym, the BabyRobot environment and all the required packages into your new environment:
+* From the activated environment run "<i>jupyter notebook</i>" and choose "<i>baby_robot_gym_test.ipynb</i>" 
+* Alternatively, open "<i>baby_robot_gym_test.ipynb</i>" in VS Code and make sure to choose "<i>BabyRobotGym</i>" as the kernel.
 
-* <i>pip install -e . </i>
+(When running in jupyter notebook the current Conda environment will automatically be used and the required packages should all be available. It's also possible to run "<i>python -m ipykernel install --user --name=BabyRobotGym</i>" which will create a Jupyter Notebook kernel, that can then be selected from the notebook's menu.)
 
 
-## 4. Add this Conda environment as a Jupyter Notebook kernel:
+## 5. Be amazed!
 
-* <i>python -m ipykernel install --user --name=BabyRobotGym</i>
-
-## 5. Run the notebook:
-
-To open the test notebook, run "<i>jupyter notebook</i>", choose "<i>baby_robot_gym_test.ipynb</i>" and then select "<i>BabyRobotGym</i>" from the <i>Kernel</i> menu. Alternatively open the project in VS Code and select the <i>BabyRobotGym</i> environment there.
-
-Then prepare to be wowed! (well not really, as all it does is show the environment loads and that there are no errors!)
+(well not really, as all it does is show the environment loads and that there are no errors!)
