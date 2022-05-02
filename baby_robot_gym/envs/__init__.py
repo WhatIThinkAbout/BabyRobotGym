@@ -1,2 +1,3 @@
-from baby_robot_gym.envs.baby_robot_env_v0 import BabyRobotEnv_v0
-from baby_robot_gym.envs.baby_robot_env_v1 import BabyRobotEnv_v1
+from .baby_robot_env_v0 import BabyRobotEnv_v0
+from .baby_robot_env_v1 import BabyRobotEnv_v1
+from .baby_robot_env_v2 import BabyRobotEnv_v2
