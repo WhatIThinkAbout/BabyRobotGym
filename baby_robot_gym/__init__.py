@@ -1,6 +1,11 @@
 from gym.envs.registration import register
 
 register(
-    id='baby-robot-v0',
-    entry_point='baby_robot_gym.envs:BabyRobotEnv',
+    id='BabyRobotEnv-v0',
+    entry_point='baby_robot_gym.envs:BabyRobotEnv_v0',
+)
+
+register(
+    id='BabyRobotEnv-v1',
+    entry_point='baby_robot_gym.envs:BabyRobotEnv_v1',
 )
