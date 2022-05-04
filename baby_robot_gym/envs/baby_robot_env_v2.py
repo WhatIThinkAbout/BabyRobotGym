@@ -17,6 +17,8 @@ class Actions(IntEnum):
 
 
 class BabyRobotEnv_v2( BabyRobotEnv_v1 ):
+
+  metadata = {'render_modes': ['human']}
   
   def __init__(self, **kwargs):
       super().__init__()
@@ -63,6 +65,9 @@ class BabyRobotEnv_v2( BabyRobotEnv_v1 ):
       info = {}
       return obs, reward, done, info     
 
-    
-  def render(self,action=0,reward=0):          
-      print(f"{Actions(action): <5}: ({self.x},{self.y}) reward = {reward}") 
+
+  def render(self, mode='human', action=0, reward=0 ):
+      if mode == 'human':
+        print(f"{Actions(action): <5}: ({self.x},{self.y}) reward = {reward}") 
+      else:
+        super().render(mode=mode) # just raise an exception      
