@@ -16,8 +16,8 @@ class BabyRobotEnv_v1(gym.Env):
         self.max_x = self.width - 1
         self.max_y = self.height - 1
 
-        # there are 4 possible actions: move N,E,S or W
-        self.action_space = Discrete(4)          
+        # there are 5 possible actions: move N,E,S,W or stay in same state
+        self.action_space = Discrete(5)          
 
         # the observation will be the coordinates of Baby Robot
         # - by using a dictionary we can define the limits in each direction  

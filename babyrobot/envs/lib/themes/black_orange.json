@@ -1,0 +1,17 @@
+{
+  "colors": {
+    "base": "#1E1E1E",
+    "grid": "#707070",
+    "start": "#007ACC",
+    "exit": "#FF1D18",
+    "border": "#CC5500",
+    "walls": "#CC5500",
+    "arrows": "#CCC",
+    "text_bg": "rgba(60,60,60,0.7)",
+    "text_fg": "#CCC"
+  },
+  "widths": {
+    "padding": 3,
+    "walls": 6
+  }
+}

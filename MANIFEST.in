@@ -1,0 +1,2 @@
+include babyrobot/envs/lib/images/*.png
+include babyrobot/envs/lib/themes/*.json

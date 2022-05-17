@@ -1,19 +1,7 @@
 
 import numpy as np
 from .baby_robot_env_v1 import BabyRobotEnv_v1
-from enum import IntEnum
-
-
-''' simple helper class to enumerate actions in the grid levels '''
-class Actions(IntEnum):      
-    North = 0
-    East = 1
-    South = 2
-    West = 3
-
-    # get the enum name without the class
-    def __str__(self): return self.name  
-
+from .lib.actions import Actions
 
 
 class BabyRobotEnv_v2( BabyRobotEnv_v1 ):
@@ -21,7 +9,7 @@ class BabyRobotEnv_v2( BabyRobotEnv_v1 ):
   metadata = {'render_modes': ['human']}
   
   def __init__(self, **kwargs):
-      super().__init__()
+      super().__init__(**kwargs)
       
       # the start and end positions in the grid
       # - by default these are the top-left and bottom-right respectively
@@ -31,6 +19,10 @@ class BabyRobotEnv_v2( BabyRobotEnv_v1 ):
       # Baby Robot's initial position
       # - by default this is the grid start 
       self.initial_pos = kwargs.get('initial_pos',self.start)  
+
+      # Baby Robot's position in the grid
+      self.x = self.initial_pos[0]
+      self.y = self.initial_pos[1]
       
       
   def take_action(self, action):
