@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="babyrobot",
-    version="0.1.1",
+    version="0.3.1",
     description="An OpenAI Gym Environment for BabyRobot",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -30,5 +30,5 @@ setup(
     ],
     packages = find_packages(exclude=("tests",)),
     include_package_data=True,
-    install_requires=["gym","ipycanvas==0.11"],    
+    install_requires=['gym','ipycanvas==0.11']    
 )

@@ -1,6 +1,7 @@
 import numpy as np
 import gym
-from gym.spaces import Discrete,Box,Dict
+from gym.spaces import Discrete
+from gym.spaces import MultiDiscrete
 
 
 class BabyRobotEnv_v1(gym.Env):
@@ -19,18 +20,15 @@ class BabyRobotEnv_v1(gym.Env):
         # there are 5 possible actions: move N,E,S,W or stay in same state
         self.action_space = Discrete(5)          
 
-        # the observation will be the coordinates of Baby Robot
-        # - by using a dictionary we can define the limits in each direction  
-        x_space = Box(low=0, high=self.max_x, shape=(1,), dtype=np.int32)
-        y_space = Box(low=0, high=self.max_y, shape=(1,), dtype=np.int32)       
-        self.observation_space = Dict({"x": x_space, "y": y_space})
-        
+        # the observation will be the coordinates of Baby Robot            
+        self.observation_space = MultiDiscrete([self.width, self.height])
+                                        
         # Baby Robot's position in the grid
         self.x = 0
         self.y = 0
 
-    def step(self, action):        
-        obs = {"x": np.array([self.x]).astype(np.int32), "y": np.array([self.y]).astype(np.int32)}
+    def step(self, action):                
+        obs = np.array([self.x,self.y])        
         reward = -1            
         done = True
         info = {}
@@ -39,8 +37,8 @@ class BabyRobotEnv_v1(gym.Env):
     def reset(self):
         # reset Baby Robot's position in the grid
         self.x = 0
-        self.y = 0        
-        return {"x": np.array([self.x]).astype(np.int32), "y": np.array([self.y]).astype(np.int32)}
-  
+        self.y = 0                
+        return np.array([self.x,self.y])
+          
     def render(self):
         pass

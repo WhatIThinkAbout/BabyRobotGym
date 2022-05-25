@@ -50,13 +50,6 @@ class DrawInfo():
       # test if a floating point precision has been defined
       self.precision = props.get('precision', self.precision)
 
-      # # check if returning the canvas should be turned off
-      # show_canvas = info.get('show_canvas',True)
-
-      # # by default only the canvas will be written
-      # # - if this is set true then text logging will also occur
-      # write_info  = info.get('write_info',False)
-
       # process anything to add to the info panel
       self.process_info(props)
 
@@ -68,6 +61,10 @@ class DrawInfo():
       if directions is not None:
         self.process_direction_arrows(directions)
         self.process_direction_text(directions)    
+
+      # test if coordinates should be added to the grid
+      if props.get('coords',False):
+        self.draw_coordinates()
 
 
   '''
@@ -86,6 +83,7 @@ class DrawInfo():
     # process each element & replace missing elements with default
     args = tuple(map(lambda x, y: y if y is not None else x, defaultargs, args))
     return args
+
 
   def process_info(self,info):
       ''' test if any text has been specified to add to the info panel '''
@@ -252,7 +250,19 @@ class DrawInfo():
       for y in range(directions.shape[0]):
         for x in range(directions.shape[1]):
           if x != self.grid.end[0] or y != self.grid.end[1]: 
-            self.draw_direction_text( x, y, directions[y,x])                                 
+            self.draw_direction_text( x, y, directions[y,x])    
+
+  '''
+      Coordinates
+  '''            
+
+  def draw_coordinates(self):
+    ''' add the coordinates to each cell '''
+    with hold_canvas(self.canvas):    
+      for y in range(self.draw_grid.grid.height):
+        for x in range(self.draw_grid.grid.width):
+          self.draw_cell_text( x, y, f"({x},{y})")   
+  
 
 
   '''
@@ -260,7 +270,7 @@ class DrawInfo():
   '''
 
   def draw_text_array(self,text):
-
+    ''' draw the supplied array of text items to the grid '''
     with hold_canvas(self.canvas):    
       for y in range(text.shape[0]):
         for x in range(text.shape[1]):

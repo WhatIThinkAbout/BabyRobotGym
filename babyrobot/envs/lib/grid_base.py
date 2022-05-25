@@ -19,6 +19,11 @@ class GridBase():
   def __init__( self, working_directory: str = ".", **kwargs: dict ):
     
     self.working_directory = working_directory
+        
+    # test if a special drawing mode should be used
+    # - currently required to run on Google Colab
+    # - try to automatically detect if running in Colab using environ
+    self.drawmode = kwargs.get('drawmode', 'colab' if 'COLAB_GPU' in os.environ else "" )
 
     self.width = kwargs.get('width',3)
     self.height = kwargs.get('height',3)    
@@ -30,6 +35,13 @@ class GridBase():
 
     # setup any puddles    
     self.puddles = kwargs.get('puddles',None)     
+
+    # setup up any properties defined for the puddles
+    puddle_props = kwargs.get('puddle_props',{})
+    self.large_puddle_reward = puddle_props.get('large_reward',-4)
+    self.small_puddle_reward = puddle_props.get('small_reward',-2)
+    self.large_puddle_probability = puddle_props.get('large_prob',0.4)
+    self.small_puddle_probability = puddle_props.get('small_prob',0.6)    
 
     # setup any maze and walls
     self.add_maze = kwargs.get('add_maze',False)
@@ -86,9 +98,10 @@ class GridBase():
 
   def get_transition_probability( self, x, y ):
     ''' get the probability of moving to the target state when starting in the state at (x,y) '''
-    puddle_size = self.get_puddle_size( x, y )
-    if puddle_size == Puddle.Large: return 0.4
-    if puddle_size == Puddle.Small: return 0.6
+    puddle_size = self.get_puddle_size( x, y )         
+
+    if puddle_size == Puddle.Large: return self.large_puddle_probability
+    if puddle_size == Puddle.Small: return self.small_puddle_probability
     
     # if no puddle then guaranteed to reach target
     return 1.     
@@ -105,4 +118,6 @@ class GridBase():
         This represents the amount of time required to move through the puddle
     '''
     puddle_size = self.get_puddle_size( x, y )
-    return -pow(2,puddle_size)     
+    if   puddle_size == Puddle.Large: return self.large_puddle_reward
+    elif puddle_size == Puddle.Small: return self.small_puddle_reward    
+    return -1    

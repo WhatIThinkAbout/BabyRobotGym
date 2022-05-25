@@ -6,9 +6,11 @@ import json
 
 from ipycanvas import MultiCanvas, Canvas, hold_canvas
 from ipywidgets import Image
-from .grid_base import GridBase
-from .arrows import Arrows
-from .direction import Direction
+
+
+from babyrobot.envs.lib import GridBase
+from babyrobot.envs.lib import Arrows
+from babyrobot.envs.lib import Direction
 
 
 
@@ -240,20 +242,20 @@ class DrawGrid():
       Puddles
   '''
 
-  # def puddle_sprite_loaded(self,*args,**kwargs):               
-  #     ''' callback for when the puddle sprite has loaded    
-  #       - when the puddle sprite has loaded its now ok to draw the level '''
-  #     self.draw_puddles()
-
-
   def load_puddle_sprite(self):        
       ' load the puddle sprite image and when loaded callback to split it into individual sprites '   
-      image_path = os.path.join(self.grid.working_directory,'images/splash_2.png')
-      sprites = Image.from_file(image_path)     
+      image_path = os.path.join(self.grid.working_directory,'images/big_puddle.png')
+      self.big_puddle = Image.from_file(image_path)     
+      
+      if self.grid.drawmode == 'colab':
+        # load a small puddle sprite
+        image_path = os.path.join(self.grid.working_directory,'images/small_puddle.png')
+        self.small_puddle = Image.from_file(image_path)    
+      else:
+        # create a canvas from the big puddle sprite
+        self.puddle_canvas = Canvas(width=self.cell_pixels, height=self.cell_pixels, sync_image_data=True)                 
+        self.puddle_canvas.draw_image( self.big_puddle, 0, 0 )          
 
-      # create the puddle canvas
-      self.puddle_canvas = Canvas(width=self.cell_pixels, height=self.cell_pixels, sync_image_data=True)                 
-      self.puddle_canvas.draw_image( sprites, 0, 0 )                      
 
 
   def draw_puddles(self):  
@@ -271,33 +273,43 @@ class DrawGrid():
     ''' draw the specified puddle size at the given location '''
     if puddle_type > 0:
 
-      # scale the puddle image according to its type (big or small)
-      scale = puddle_type / 2
+      # create a puddle canvas, containing the scaled and randomly rotated
+      # puddle - not current supported on colab
+      if self.grid.drawmode != 'colab':
 
-      # create a new canvas for each splash
-      splash_canvas = Canvas(width=self.cell_pixels, height=self.cell_pixels)
-      with hold_canvas(splash_canvas):          
+        # scale the puddle image according to its type (big or small)
+        scale = puddle_type / 2
 
-          pos_x = self.cell_pixels//2
-          pos_y = self.cell_pixels//2
+        # create a new canvas for each splash
+        splash_canvas = Canvas(width=self.cell_pixels, height=self.cell_pixels)
+        with hold_canvas(splash_canvas):          
 
-          # Choose a random rotation angle 
-          # (but first set the rotation center with `translate`)
-          splash_canvas.translate(pos_x, pos_y)
-          splash_canvas.rotate(uniform(0., pi))
+            pos_x = self.cell_pixels//2
+            pos_y = self.cell_pixels//2
 
-          # scale the image
-          splash_canvas.scale(scale)
+            # Choose a random rotation angle 
+            # (but first set the rotation center with `translate`)
+            splash_canvas.translate(pos_x, pos_y)
+            splash_canvas.rotate(uniform(0., pi))
 
-          # Restore the canvas center
-          splash_canvas.translate( -pos_x, -pos_y )
+            # scale the image
+            splash_canvas.scale(scale)
 
-          # Draw the sprite          
-          splash_canvas.draw_image(self.puddle_canvas, 0, 0)          
+            # Restore the canvas center
+            splash_canvas.translate( -pos_x, -pos_y )
+
+            # Draw the sprite          
+            splash_canvas.draw_image(self.puddle_canvas, 0, 0)          
 
       x_px = x * self.cell_pixels + self.padding
       y_px = y * self.cell_pixels + self.padding
-      canvas.draw_image(splash_canvas,x_px,y_px,width=self.cell_pixels,height=self.cell_pixels)
+      if self.grid.drawmode == 'colab':
+        if puddle_type==1:
+          canvas.draw_image(self.small_puddle,x_px,y_px,width=self.cell_pixels,height=self.cell_pixels)
+        else:
+          canvas.draw_image(self.big_puddle,x_px,y_px,width=self.cell_pixels,height=self.cell_pixels)
+      else:
+        canvas.draw_image(splash_canvas,x_px,y_px,width=self.cell_pixels,height=self.cell_pixels)
 
 
   def draw_compass(self,canvas):      
@@ -335,16 +347,19 @@ class DrawGrid():
         self.draw_rect(Level.Base, width, height, color, x = 0, y = self.height_pixels)     
 
 
-  def clear( self ):
+  def clear( self, all_info = False ):
     ''' clear anything currently in the info panels '''    
 
     canvas = self.canvases[Level.Overlay]
-
+        
     if self.side_panel is not None:
       canvas.clear_rect(self.width_pixels,0,(self.total_width-self.width_pixels),self.total_height)   
 
     if self.bottom_panel is not None:
       canvas.clear_rect(0,self.height_pixels,self.total_width,(self.total_height-self.height_pixels))         
+
+    if all_info == True:
+      canvas.clear()
 
 
   '''
@@ -364,13 +379,31 @@ class DrawGrid():
     self.draw_rect(Level.Base, self.width_pixels, self.height_pixels, self.base_color)   
         
     canvas = self.canvases[Level.Grid]
-    # with hold_canvas(canvas):           
-    self.draw_start(canvas)
-    self.draw_exit(canvas)   
-    self.draw_grid(canvas)
-    self.draw_maze(canvas) 
-    self.draw_border(canvas)  
-    self.draw_compass(canvas) 
+    
+    # change after ipycanvas v11?
+    with hold_canvas(canvas):           
+      self.draw_start(canvas)
+      self.draw_exit(canvas)   
+      self.draw_grid(canvas)
+      self.draw_maze(canvas) 
+      self.draw_border(canvas)  
+      self.draw_compass(canvas) 
 
     # draw puddles separately as may require loading of a sprite
-    self.draw_puddles()                                            
+    self.draw_puddles()         
+
+
+  # test function
+  def create_canvas(self):
+    
+    width = 200
+    height = 200
+
+    # Create a multi-layer canvas with 2 layers
+    canvas = MultiCanvas(2, width=width, height=height, sync_image_data=True)
+
+    # color of the grid base layer
+    canvas[0].fill_style = 'orange' 
+    canvas[0].fill_rect(0, 0, width, height) 
+
+    return canvas                                       

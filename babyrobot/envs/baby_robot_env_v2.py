@@ -44,9 +44,9 @@ class BabyRobotEnv_v2( BabyRobotEnv_v1 ):
   def step(self, action): 
 
       # take the action and update the position
-      self.take_action(action)
-      obs = {"x": np.array([self.x]).astype(np.int32), "y": np.array([self.y]).astype(np.int32)}
-      
+      self.take_action(action)      
+      obs = np.array([self.x,self.y])
+            
       # set the 'done' flag if we've reached the exit
       done = (self.x == self.end[0]) and (self.y == self.end[1])
       

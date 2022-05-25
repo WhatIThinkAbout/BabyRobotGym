@@ -9,45 +9,39 @@ logging.basicConfig(level=logging.DEBUG, format='(%(threadName)-9s) %(message)s'
 class RobotPosition():
         
     move_count = 0   
-    x_offset = 0
-    y_offset = 0
-
     maze = None
     
-    def __init__(self, level, x_size = 256, y_size = 256, initial_sprite = 4, start_pos = None,
-                 x_offset = 0, y_offset = 0 ):
+
+    def __init__( self, level, **kwargs ):                
                 
-        self.level = level.grid_base
-        self.grid  = level.draw_grid
+      self.level = level.grid_base
+      self.grid  = level.draw_grid
+      
+      if hasattr(level, 'maze'):
+        self.maze = level.maze
         
-        if hasattr(level, 'maze'):
-          self.maze = level.maze
-          
-        # the position in grid cells
-        self.x_cell = 0
-        self.y_cell = 0
-        
-        # the position in pixels                        
-        self.x = 0
-        self.y = 0     
-        
-        self.step = 4
-        self.robot_size = 64
-        self.x_offset = x_offset
-        self.y_offset = y_offset
-                
-        if self.maze is None:
-            self.x_size = self.grid .width_pixels
-            self.y_size = self.grid .height_pixels
-        else:
-            x,y = self.maze.dimensions()
-            self.x_size = x * self.robot_size
-            self.y_size = y * self.robot_size                                   
-        
-        if not start_pos:
-          self.set_cell_position(self.level.start)
-        else:
-          self.set_cell_position(start_pos)        
+      # the position in grid cells
+      self.x_cell = 0
+      self.y_cell = 0
+      
+      # the position in pixels                        
+      self.x = 0
+      self.y = 0     
+      
+      self.step = 4
+      self.robot_size = 64
+              
+      if self.maze is None:
+          self.x_size = self.grid.width_pixels
+          self.y_size = self.grid.height_pixels
+      else:
+          x,y = self.maze.dimensions()
+          self.x_size = x * self.robot_size
+          self.y_size = y * self.robot_size                                   
+
+      # baby robot's initial position     
+      self.initial_position = kwargs.get('initial_pos',self.level.start)
+      self.set_cell_position(self.initial_position)        
 
 
     def get_cell_position(self):
@@ -86,8 +80,6 @@ class RobotPosition():
         while (self.y_cell > 0) and (self.y_cell > new_y):          
           self.move_direction(Direction.North)                     
           self.y_cell -= 1
-
-        self.draw() 
 
 
     def test_for_valid_move( self, direction ):

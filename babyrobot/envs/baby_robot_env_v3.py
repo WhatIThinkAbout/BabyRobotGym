@@ -3,7 +3,7 @@ import numpy as np
 from .baby_robot_env_v2 import BabyRobotEnv_v2
 
 from .lib.grid_level import GridLevel
-from .lib.robot_position import RobotPosition
+from .lib.robot_draw import RobotDraw
 from .lib.actions import Actions
 
 
@@ -13,22 +13,27 @@ class BabyRobotEnv_v3( BabyRobotEnv_v2 ):
   metadata = {'render.modes': ['human']}
   
   def __init__(self, **kwargs):
-      super().__init__(**kwargs)      
+      super().__init__(**kwargs)
       
-      # graphical creation of the level      
+      # graphical creation of the level
       self.level = GridLevel( **kwargs )  
       
       # add baby robot
-      self.robot = RobotPosition(self.level)   
-      self.robot.set_cell_position(self.initial_pos)
+      self.robot = RobotDraw(self.level,**kwargs)   
+      self.robot.draw()  
       
       
   def reset(self):
       # reset Baby Robot's position in the grid
       self.robot.set_cell_position(self.initial_pos)
       self.x = self.initial_pos[0]
-      self.y = self.initial_pos[1]             
-      return {"x": np.array([self.x]).astype(np.int32), "y": np.array([self.y]).astype(np.int32)}   
+      self.y = self.initial_pos[1]         
+      self.robot.reset()         
+      # return {"x": np.array([self.x]).astype(np.int32), "y": np.array([self.y]).astype(np.int32)}   
+      # return np.array([self.x,self.y])
+
+      state = (self.x + (self.y * self.width)) 
+      return state
       
       
   def render(self,action=0,reward=0):          
@@ -36,4 +41,4 @@ class BabyRobotEnv_v3( BabyRobotEnv_v2 ):
       ''' render as an HTML5 canvas '''
       # move baby robot to the current position
       self.robot.move(self.x,self.y) 
-      return self.level.draw()  
+      return self.level.draw() 

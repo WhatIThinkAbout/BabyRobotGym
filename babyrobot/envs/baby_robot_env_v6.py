@@ -40,16 +40,11 @@ class BabyRobotEnv_v6( BabyRobotEnv_v5 ):
   def step(self, action): 
 
       # take the action and update the position
-      reward, target_reached = self.take_action(action)
-      obs = {"x": np.array([self.x]).astype(np.int32), "y": np.array([self.y]).astype(np.int32)}
+      reward, target_reached = self.take_action(action)      
+      obs = np.array([self.x,self.y])      
            
       # set the 'done' flag if we've reached the exit
       done = (self.x == self.end[0]) and (self.y == self.end[1])
         
       info = {'target_reached':target_reached}
-      return obs, reward, done, info      
-      
-
-  def show_info(self,info):
-      ''' display the supplied information on the grid level '''
-      self.level.show_info( info )
+      return obs, reward, done, info            

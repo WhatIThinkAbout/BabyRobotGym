@@ -29,8 +29,8 @@ class BabyRobotEnv_v4( BabyRobotEnv_v3 ):
   def __init__(self, **kwargs):
       super().__init__(**kwargs)              
       
-      # initially no actions are available
-      self.action_space = Dynamic()   
+      # initially no actions are available      
+      self.dynamic_action_space = Dynamic() 
 
       # set the initial position and available actions
       self.reset() 
@@ -52,11 +52,11 @@ class BabyRobotEnv_v4( BabyRobotEnv_v3 ):
   def set_available_actions( self ):
       ' set the list of available actions into the action space '
       action_list = self.get_available_actions()   
-      self.action_space.set_actions( action_list )      
+      self.dynamic_action_space.set_actions( action_list )      
 
   def show_available_actions( self ):
       ''' print the set of avaiable actions for current state '''
-      available_actions = str(self.action_space.get_available_actions()).replace("'","")
+      available_actions = str(self.dynamic_action_space.get_available_actions()).replace("'","")
       print(f"({self.x},{self.y}) {available_actions:29}",end="")             
       
   def take_action(self, action):

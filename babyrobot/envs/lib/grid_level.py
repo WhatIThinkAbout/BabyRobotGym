@@ -99,9 +99,9 @@ class GridLevel():
     ''' render the grid canvases '''
     return self.draw_grid.canvases
 
-  def clear( self ):
+  def clear( self, all_info=False ):
     ''' clear anything currently in the info panels '''
-    self.draw_grid.clear()
+    self.draw_grid.clear(all_info)
 
   def show_info( self, info: dict ):
     ''' add the supplied information to the grid '''
