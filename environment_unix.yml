@@ -94,6 +94,7 @@ dependencies:
     - entrypoints==0.4
     - fonttools==4.33.3
     - gym==0.21.0
+    - ipycanvas==0.11
     - ipykernel==6.9.1
     - ipython==8.2.0
     - jedi==0.18.1

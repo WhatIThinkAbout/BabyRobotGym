@@ -17,6 +17,7 @@ dependencies:
   - glib=2.69.1   
   - icu=58.2
   - ipython_genutils=0.2.0
+  - ipycanvas==0.11
   - ipywidgets=7.6.5
   - jinja2=3.0.3
   - jpeg=9e
