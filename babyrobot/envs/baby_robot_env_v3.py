@@ -28,15 +28,11 @@ class BabyRobotEnv_v3( BabyRobotEnv_v2 ):
       self.robot.set_cell_position(self.initial_pos)
       self.x = self.initial_pos[0]
       self.y = self.initial_pos[1]         
-      self.robot.reset()         
-      # return {"x": np.array([self.x]).astype(np.int32), "y": np.array([self.y]).astype(np.int32)}   
-      # return np.array([self.x,self.y])
-
-      state = (self.x + (self.y * self.width)) 
-      return state
+      self.robot.reset()               
+      return np.array([self.x,self.y])
       
       
-  def render(self,action=0,reward=0):          
+  def render(self, mode='human', action=0, reward=0 ):          
       print(f"{Actions(action): <5}: ({self.x},{self.y}) reward = {reward}")    
       ''' render as an HTML5 canvas '''
       # move baby robot to the current position

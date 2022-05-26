@@ -40,5 +40,5 @@ class BabyRobotEnv_v1(gym.Env):
         self.y = 0                
         return np.array([self.x,self.y])
           
-    def render(self):
+    def render(self, mode):
         pass

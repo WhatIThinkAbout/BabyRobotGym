@@ -24,6 +24,7 @@ class Dynamic(gym.Space):
       return [str(action) for action in self.available_actions] 
 
 
+
 class BabyRobotEnv_v4( BabyRobotEnv_v3 ):
   
   def __init__(self, **kwargs):
@@ -34,6 +35,7 @@ class BabyRobotEnv_v4( BabyRobotEnv_v3 ):
 
       # set the initial position and available actions
       self.reset() 
+
    
   def get_available_actions( self ):
       ''' test which actions are allowed at the specified grid state '''      
@@ -47,18 +49,21 @@ class BabyRobotEnv_v4( BabyRobotEnv_v3 ):
       if direction_value & Direction.South: action_list.append( Actions.South )
       if direction_value & Direction.East:  action_list.append( Actions.East ) 
       if direction_value & Direction.West:  action_list.append( Actions.West )                
-      return action_list           
+      return action_list     
+
             
   def set_available_actions( self ):
       ' set the list of available actions into the action space '
       action_list = self.get_available_actions()   
       self.dynamic_action_space.set_actions( action_list )      
 
+
   def show_available_actions( self ):
       ''' print the set of avaiable actions for current state '''
       available_actions = str(self.dynamic_action_space.get_available_actions()).replace("'","")
       print(f"({self.x},{self.y}) {available_actions:29}",end="")             
       
+
   def take_action(self, action):
       ''' apply the supplied action '''
 
@@ -67,6 +72,7 @@ class BabyRobotEnv_v4( BabyRobotEnv_v3 ):
         
       # set the available actions for the new state
       self.set_available_actions()         
+      
       
   def reset(self):
       # reset Baby Robot's position in the grid
