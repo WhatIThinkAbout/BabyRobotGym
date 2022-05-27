@@ -7,8 +7,6 @@ To get up and running with this simple custom Gym Environment, do the following:
 
 ## Cloning the Github repository
 
-To make it easy to examine the directory structure described above, it can be recreated by cloning the _Github_ repository. The steps to do this are as follows:
-<br><br>
 
 ## 1\.&nbsp; <b><i>Get the code and move to the newly created directory</b></i>:
 
