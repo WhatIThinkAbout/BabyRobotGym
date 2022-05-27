@@ -18,5 +18,5 @@ class BabyRobotEnv_v0(gym.Env):
         state = 0
         return state
   
-    def render(self):
+    def render(self,mode):
         pass

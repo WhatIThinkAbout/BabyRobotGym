@@ -1,7 +1,6 @@
 import numpy as np
 import gym
-from gym.spaces import Discrete
-from gym.spaces import MultiDiscrete
+from gym.spaces import Discrete, MultiDiscrete
 
 
 class BabyRobotEnv_v1(gym.Env):

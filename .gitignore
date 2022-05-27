@@ -27,7 +27,10 @@ share/python-wheels/
 MANIFEST
 build_steps.txt
 tests/
-notebooks/
+
+! notebooks/
+notebooks/.*
+notebooks/Part\ 2*
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
