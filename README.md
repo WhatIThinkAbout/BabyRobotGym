@@ -13,12 +13,13 @@ To get up and running with this simple custom Gym Environment, do the following:
 `git clone https://github.com/WhatIThinkAbout/BabyRobotGym.git` <br>
 `cd BabyRobotGym`
 
-* this directory contains the files and folder structure that we've defined above (plus a few extra ones that we'll look at in part 2).
+* this directory contains the files and folder structure.
 
 <br><br>
 ## 2\.&nbsp; <b><i>Create a Conda environment and install the required packages</b></i>:<br>
 
-To be able to run our environment we need to have a few other packages installed, most notably 'Gym' itself. To make it easy to setup the environment the Github repo contains a couple of '.yml' files that list the required packages. 
+To be able to run our environment we need to have a few other packages installed, most notably '_Gym_' itself. To make it easy to setup the environment the Github repo contains a couple of '_.yml_' files that list the required packages. 
+
 To use these to create a Conda environment and install the packages, do the following (choose the one appropriate for your operating system):
 
 On Unix:
