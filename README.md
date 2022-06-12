@@ -2,10 +2,15 @@
 An OpenAI Gym Environment for Baby Robot
 
 
-To get up and running with this simple custom Gym Environment, do the following:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/WhatIThinkAbout/BabyRobotGym/blob/main/baby_robot_gym_test.ipynb)
+
+
+The code in this repository accompanies the Towards Data Science article _[<b>Creating a Custom Gym Environment for Jupyter Notebooks</b> - <i>Part 1: Creating the framework</i>](https://towardsdatascience.com/creating-a-custom-gym-environment-for-jupyter-notebooks-e17024474617)_ and shows the steps required to create a custom gym environment with graphical output in a Jupyter notebook.
 
 
 ## Cloning the Github repository
+
+To get up and running with this simple custom Gym Environment, do the following:
 
 
 ## 1\.&nbsp; <b><i>Get the code and move to the newly created directory</b></i>:
