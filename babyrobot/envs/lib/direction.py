@@ -1,6 +1,8 @@
 from enum import IntFlag
 from typing import List,Union
 
+from babyrobot.envs.lib.actions import Actions
+
 ''' simple helper class to enumerate directions in the grid levels '''
 class Direction(IntFlag):
     Stay = 0
@@ -62,4 +64,11 @@ class Direction(IntFlag):
       if direction_value & Direction.South: dir_list.append( Direction.South )
       if direction_value & Direction.East:  dir_list.append( Direction.East ) 
       if direction_value & Direction.West:  dir_list.append( Direction.West )    
-      return dir_list    
+      return dir_list  
+
+
+    def from_action( action_value: Actions):
+      ''' convert an action value to a direction '''
+      if Actions(action_value) is not Actions.Stay:              
+        return Direction(pow(2, action_value-1))
+      return Direction.Stay

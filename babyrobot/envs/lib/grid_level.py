@@ -11,6 +11,11 @@ from .draw_info import DrawInfo
 
 
 class GridLevel():
+  ''' 
+    Class to manage a grid level.
+    This performs all drawing and querying of the level 
+    (to see which moves are possible within a given grid cell)
+  '''
 
   def __init__( self, **kwargs: dict ):
     
@@ -109,4 +114,8 @@ class GridLevel():
 
   def save( self, filename ):
     ''' render the grid canvases '''    
-    return self.draw_grid.canvases.to_file(filename)
+    return self.get_canvases().to_file(filename)
+
+  def get_canvases(self):
+    ''' get the grid levels multi-canvas '''
+    return self.draw_grid.canvases

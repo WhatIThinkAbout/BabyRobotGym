@@ -113,9 +113,9 @@ class RobotDraw( RobotPosition ):
   def draw(self):    
       ' add the current sprite at the current position '     
       self.draw_sprite(self.sprite_index)
-      self.update_sprite()        
+      self.update_sprite()      
 
-          
+
   def move_direction(self,direction):        
       ' move from one square to the next in the specified direction '
       
@@ -130,7 +130,7 @@ class RobotDraw( RobotPosition ):
               getattr(self,move_method_name)()  
               self.draw()  
               sleep(self.sleep) # pause between each move step        
-              self.move_step += 1
+              self.move_step += 1                 
                
           self.move_count += 1     
 
@@ -161,11 +161,17 @@ class RobotDraw( RobotPosition ):
       ' move from one square to the next in the specified direction '
               
       if direction is not None:
-        move_method_name = f"move_{direction.name}"        
-        getattr(self,move_method_name)()  
+        if self.test_for_valid_move(direction):
+          move_method_name = f"move_{direction.name}"        
+          getattr(self,move_method_name)()  
 
-      if sprite_index is not None:
-        self.sprite_index = sprite_index 
-      self.draw()  
-          
-      self.move_count += 1  
+          if sprite_index is not None:
+            self.sprite_index = sprite_index 
+          self.draw()                
+          self.move_count += 1 
+
+          # a move took place
+          return True
+
+      # no move occurred
+      return False 
