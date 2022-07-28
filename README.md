@@ -2,7 +2,7 @@
 ### A Reinforcement Learning Gym Environment for Baby Robot
 
 
-<center><img src="images/drawgrid_v6_opt.gif"/></center>
+<center><img src="notebooks/images/drawgrid_v6_opt.gif"/></center>
 
 
 The code in this repository accompanies the Towards Data Science article _[<b>Creating a Custom Gym Environment for Jupyter Notebooks</b> - <i>Part 1: Creating the framework</i>](https://towardsdatascience.com/creating-a-custom-gym-environment-for-jupyter-notebooks-e17024474617)_ and shows the steps required to create a custom gym environment with graphical output in a Jupyter notebook.
@@ -21,6 +21,12 @@ The example notebook, showing all of the API calls used to create a Baby Robot G
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/WhatIThinkAbout/BabyRobotGym/blob/main/notebooks/BabyRobot_API.ipynb)
 
+
+### Training Example
+
+An example of using the PPO Reinforcement Learning algorithm to train Baby Robot how to escape from a maze:
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/WhatIThinkAbout/BabyRobotGym/blob/main/notebooks/PPO_Training.ipynb)
 
 ## Getting the Github Code:
 
