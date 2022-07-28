@@ -21,8 +21,7 @@ class BabyRobotEnv_v6( BabyRobotEnv_v5 ):
       '''      
 
       # convert the action into a direction bitfield
-      if action == Actions.Stay: direction = Direction.Stay
-      else:                      direction = Direction(2**(action-1)) 
+      direction = Direction.from_action(action) 
         
       # calculate the postion of the next state and the reward for moving there
       next_pos,reward,target_reached = self.level.get_next_state( self.x, self.y, direction )  

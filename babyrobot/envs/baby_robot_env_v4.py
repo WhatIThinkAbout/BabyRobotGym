@@ -1,5 +1,7 @@
-import gym
 import numpy as np
+
+import gym
+from gym.spaces import Discrete
 
 from .baby_robot_env_v3 import BabyRobotEnv_v3
 from .lib.direction import Direction
@@ -32,6 +34,17 @@ class BabyRobotEnv_v4( BabyRobotEnv_v3 ):
       
       # initially no actions are available      
       self.dynamic_action_space = Dynamic() 
+
+      # by default use a dynamic action space 
+      if kwargs.get('action_space','dynamic') == 'dynamic':
+        self.action_space = self.dynamic_action_space              
+      else:
+        # use discrete action space 
+        # - required for Stable Baselines environment checker which cant yet
+        #   recognise dynamic spaces
+        # - all actions are available in each state
+        # - there are 5 possible actions: move N,E,S,W or stay in same state
+        self.action_space = Discrete(5)         
 
       # set the initial position and available actions
       self.reset() 

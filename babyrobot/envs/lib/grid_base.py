@@ -2,6 +2,8 @@
 import os
 from enum import IntEnum
 from .maze import Maze
+import numpy as np
+from typing import Union
 
 
 class Puddle(IntEnum):
@@ -12,8 +14,12 @@ class GridBase():
  
   maze = None                # instance of maze if defined  
   puddles = None             # set of tiles where puddles exist
+  base_areas = []            # any areas that exist on the base 
+  grid_areas = []            # and areas that exist on the grid
   
   debug_maze = False         # write the maze to a svg file  
+
+  grid_rewards = []          # the rewards calculated for the whole grid
 
   
   def __init__( self, working_directory: str = ".", **kwargs: dict ):
@@ -43,12 +49,21 @@ class GridBase():
     self.large_puddle_probability = puddle_props.get('large_prob',0.4)
     self.small_puddle_probability = puddle_props.get('small_prob',0.6)    
 
+    # setup any base-level areas    
+    self.base_areas = kwargs.get('base_areas',[])     
+
+    # setup any grid-level areas    
+    self.grid_areas = kwargs.get('grid_areas',[])       
+
     # setup any maze and walls
     self.add_maze = kwargs.get('add_maze',False)
     self.maze_seed = kwargs.get('maze_seed',0)
     self.make_maze()
-    self.toggle_walls( kwargs.get('walls',[]) )    
+    self.toggle_walls( kwargs.get('walls',[]) )
 
+    # calculate the rewards for each cell in the grid
+    self.grid_rewards = self.get_reward()
+    
 
   '''
       Maze and Walls
@@ -79,7 +94,7 @@ class GridBase():
         elif direction == 'S': next_cell = self.maze.cell_at(x,y+1)
         
         # add a new wall if none already otherwise remove
-        current_cell.toggle_wall(next_cell, direction)       
+        current_cell.toggle_wall(next_cell, direction)           
 
 
   '''
@@ -105,9 +120,33 @@ class GridBase():
     
     # if no puddle then guaranteed to reach target
     return 1.     
-     
 
-  def get_reward( self, x, y ):
+
+  def get_reward( self, x: int = None, y: int = None ) -> Union[int,np.ndarray]:
+    ''' return the reward for the specified grid cell '''
+    if (x is None) or (y is None):
+      return self.get_reward_array()
+    else:
+      return self.get_reward_value(x,y)
+
+
+  def get_reward_array(self) -> np.ndarray:
+    ''' return a numpy array containing the reward value for all grid cells '''
+
+    if len(self.grid_rewards) == 0:       
+      height = self.height
+      width = self.width
+      reward_arr = np.zeros((height,width)).astype(int)
+      for y in range(height):
+        for x in range(width):
+          reward_arr[y][x] = self.get_reward_value(x,y) 
+      return reward_arr      
+
+    # grid rewards already calculated
+    return self.grid_rewards
+        
+
+  def get_reward_value( self, x, y ):
     ''' return the reward obtained for moving to the specified state 
 
         The amount of reward is a function of the puddle size:
@@ -117,7 +156,57 @@ class GridBase():
 
         This represents the amount of time required to move through the puddle
     '''
+
+    if len(self.grid_rewards) > 0: 
+      # use the pre-calculated rewards
+      # - note this holds the rewards as row,col so must swap x and y   
+      return self.grid_rewards[y,x]
+
+    # the terminal state has a reward of zero
+    if (x == self.end[0]) and (y == self.end[1]):
+      return 0
+
     puddle_size = self.get_puddle_size( x, y )
     if   puddle_size == Puddle.Large: return self.large_puddle_reward
-    elif puddle_size == Puddle.Small: return self.small_puddle_reward    
-    return -1    
+    elif puddle_size == Puddle.Small: return self.small_puddle_reward  
+
+    # no rewards exist off the grid
+    for area in self.base_areas: 
+      # test if only the area defn has been supplied
+      if type(area[0]).__name__ == 'int':
+        ax,ay,aw,ah = self.get_area_defn(area)
+      else:
+        ax,ay,aw,ah = self.get_area_defn(area[0])      
+      if self.in_area(x,y,ax,ay,aw,ah):
+        return 0
+
+    # if any grid areas exist these can set different rewards
+    # - the most recently defined area is the one whose reward will be taken
+    # for a cell
+    cell_reward = -1
+    for area in self.grid_areas:      
+      if len(area) > 2:   
+        try:     
+          ax,ay,aw,ah = self.get_area_defn(area[0]) 
+          if self.in_area( x,y,ax,ay,aw,ah ):
+            cell_reward = area[2]        
+        except:
+          pass
+
+    return cell_reward    
+
+  '''
+     Areas
+  '''
+
+  def get_area_defn( self, area):
+    ''' extract the area properties from the supplied area tuple '''
+    x,y,*args = area
+    wd,ht = args if args else (1,1) # default to unit-square if no values specified
+    return x,y,wd,ht
+
+
+  def in_area(self,x,y,ax,ay,aw,ah):
+    if (x >= ax and x < (ax + aw)) and ((y >= ay and y < (ay + ah))):
+      return True
+    return False    

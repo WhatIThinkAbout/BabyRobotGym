@@ -1,5 +1,21 @@
 from gym.envs.registration import register
 
+
+#
+# Release Gym Environments
+#
+
+
+register(
+    id='BabyRobot-v0',
+    entry_point='babyrobot.envs:BabyRobot_v0',
+)
+
+
+#
+# Example Gym Environments
+#
+
 register(
     id='BabyRobotEnv-v0',
     entry_point='babyrobot.envs:BabyRobotEnv_v0',
@@ -33,4 +49,9 @@ register(
 register(
     id='BabyRobotEnv-v6',
     entry_point='babyrobot.envs:BabyRobotEnv_v6',
+)
+
+register(
+    id='BabyRobotEnv-v7',
+    entry_point='babyrobot.envs:BabyRobotEnv_v7',
 )

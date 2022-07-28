@@ -40,6 +40,13 @@ class GridLevel():
     return self.grid_info.get_directions( x, y )
 
 
+  def get_rewards( self, x: int = None, y: int = None ) -> Union[Direction,np.ndarray]:
+    ''' return the reward for the specified grid cell 
+        - if a grid cell is not specified then return an array of rewards for all grid cells
+    '''
+    return self.grid_base.get_reward( x, y )
+
+
   def get_next_state( self, x, y, direction ):
     ''' return the next state and reward for moving 
         - (x,y) = current state
@@ -86,7 +93,7 @@ class GridLevel():
     if direction == 'N': next_pos = [x,y-1]
     if direction == 'S': next_pos = [x,y+1]
     if direction == 'E': next_pos = [x+1,y]
-    if direction == 'W': next_pos = [x-1,y]       
+    if direction == 'W': next_pos = [x-1,y] 
 
     # get the reward for taking this action
     reward = self.grid_base.get_reward( next_pos[0], next_pos[1] )

@@ -29,6 +29,7 @@ class DrawGrid():
   cell_pixels = 64           # pixel dimensions of a grid square     
   padding = 2                # padding around the cells
   wall_width = 4             # the width of maze walls  
+  border_width = 5           # the width of the outside border
   side_panel = None          # by default there's no side info panel
   bottom_panel = None        # by default there's no bottom info panel
 
@@ -55,7 +56,7 @@ class DrawGrid():
     # setup any information items
     self.add_compass = kwargs.get('add_compass',False)
     self.side_panel = kwargs.get('side_panel',None)    
-    self.bottom_panel = kwargs.get('bottom_panel',None)        
+    self.bottom_panel = kwargs.get('bottom_panel',None)            
 
     # load the image used to draw puddles
     self.load_puddle_sprite() 
@@ -75,11 +76,19 @@ class DrawGrid():
     if grid_props is not None:
 
       # first test if a theme is specified
-      theme = grid_props.get('theme','black_orange')
-      if theme is not None:           
-        theme_path = os.path.join(self.grid.working_directory,f'themes/{theme}.json')           
-        with open(theme_path) as json_file:
-          grid_props = json.load(json_file)        
+      theme = grid_props.get('theme',None)
+      if theme is not None:       
+        # look for packaged themes
+        theme_path = os.path.join(self.grid.working_directory,f'themes/{theme}.json')
+        if os.path.exists(theme_path):         
+          with open(theme_path) as json_file:
+            grid_props = json.load(json_file)        
+        else:
+          # look for user defined themes      
+          theme_path = os.path.join(os.getcwd(),f'themes/{theme}.json')
+          if os.path.exists(theme_path):         
+            with open(theme_path) as json_file:
+              grid_props = json.load(json_file)  
 
 
       colors = grid_props.get('colors',None)
@@ -98,6 +107,7 @@ class DrawGrid():
       if widths is not None:
         self.padding = widths.get('padding', self.padding)
         self.wall_width = widths.get('walls', self.wall_width)     
+        self.border_width = widths.get('border', self.border_width)     
 
 
   def calculate_dimensions(self):
@@ -177,6 +187,222 @@ class DrawGrid():
     canvas.fill_rect(x, y, width, height) 
 
 
+  # def draw_area_walls(self):
+  #   pass
+
+  def set_reward_area(self,x,y,wd,ht,reward):
+    pass
+
+  def draw_grid_areas(self):
+    ''' draw any grid areas 
+      - these are areas on the grid that can be moved to '''
+    for area in self.grid.grid_areas:
+      try:  
+        x,y,wd,ht = self.grid.get_area_defn(area[0])
+        width  = wd * self.cell_pixels 
+        height = ht * self.cell_pixels 
+        px, py = self.grid_to_pixels([x,y])
+
+        canvas_index = Level.Base     
+        self.draw_rect( canvas_index, width, height, area[1], px, py )                
+
+      except:
+        # ignore bad entries
+        pass   
+
+
+  def draw_base_areas(self):
+    ''' draw any base areas 
+      - these are areas off the grid that cannot be moved to '''
+    for area in self.grid.base_areas:
+      try:  
+
+        area_only = False        
+        # test if only the area defn has been supplied
+        if type(area[0]).__name__ == 'int':
+          x,y,wd,ht = self.grid.get_area_defn(area)
+          area_only = True
+        else:
+          x,y,wd,ht = self.grid.get_area_defn(area[0])
+        width  = wd * self.cell_pixels 
+        height = ht * self.cell_pixels 
+        px, py = self.grid_to_pixels([x,y])
+
+        # adjust the area if its at the edges
+        half_border = self.border_width//2
+        if x == 0:
+          px -= half_border
+          width += half_border
+        if y == 0:
+          py -= half_border
+          height += half_border
+        if (x+wd) == self.grid.width:          
+          width += half_border          
+        if (y+ht) == self.grid.height:          
+          height += half_border                
+
+        # draw the area
+        color = "white" # base areas are white by default
+        if area_only == False and len(area) > 1: 
+          if type(area[1]).__name__ == 'str': color = area[1]        
+        canvas_index = Level.Grid     
+        self.draw_rect( canvas_index, width, height, color, px, py )
+
+
+        #
+        # Draw Borders
+        # 
+        
+        borders = None  # all borders are added by default
+        if area_only == False and len(area) > 1: 
+          if type(area[1]).__name__ != 'str': borders = area[1]
+          if len(area) == 3: borders = area[2]
+
+        if borders == None:
+          # base areas by default have their borders drawn
+          # - so if no borders have been defined by the setup 
+          # add all borders that are not on the edges of the canvas
+          borders = []
+          if y != 0: borders.append(('N'))
+          if (y+ht) != self.grid.height: borders.append(('S'))
+          if x != 0: borders.append(('W'))
+          if (x+wd) != self.grid.width: borders.append(('E'))        
+
+        canvas = self.canvases[Level.Grid]
+        canvas.set_line_dash([0,0])
+        canvas.line_cap = 'square'
+
+        for border in borders:                      
+          edge = border[0]
+          canvas.stroke_style = border[1] if len(border) > 1 else self.border_color                                                          
+          canvas.line_width = border[2] if len(border) == 3 else self.border_width 
+            
+          # top border
+          if edge == 'N':
+            x1 = self.padding + px
+            y1 = self.padding + py 
+            x2 = x1 + width-(2*self.padding)
+            y2 = y1
+            self.draw_line( canvas, x1, y1, x2, y2 )
+
+          # bottom border          
+          if edge == 'S':
+            x1 = self.padding + px
+            y1 = py + height - self.padding 
+            x2 = x1 + width-(2*self.padding)
+            y2 = y1
+            self.draw_line( canvas, x1, y1, x2, y2 )
+
+          # left border          
+          if edge == 'W':
+            x1 = self.padding + px
+            y1 = self.padding + py 
+            x2 = x1
+            y2 = y1 + height-(2*self.padding)
+            self.draw_line( canvas, x1, y1, x2, y2 )        
+
+          # right border
+          # if edge == 'E' and (x+wd) != self.grid.width:
+          if edge == 'E':
+            x1 = px + width - self.padding
+            y1 = self.padding + py 
+            x2 = x1
+            y2 = y1 + height-(2*self.padding)
+            self.draw_line( canvas, x1, y1, x2, y2 )                                      
+
+      except:
+        # ignore bad entries
+        pass        
+
+
+  def draw_line( self, canvas, x1, y1, x2, y2 ):
+      ''' draw a straight line on the canvas '''
+      canvas.begin_path()
+      canvas.move_to(x1 , y1 )
+      canvas.line_to(x2 , y2 )
+      canvas.stroke()      
+
+
+  # def draw_areas(self,canvas_index=0):
+  #   ''' change the base color for any specified areas '''    
+  #   for area in self.base_areas:
+  #     try:  
+  #       x,y,*args = area[0]  
+  #       wd,ht = args if args else (1,1)
+        
+  #       # by default draw areas to the base canvas unless another index
+  #       # is specified
+  #       area_canvas = area[2] if len(area) >= 3 else Level.Base
+
+  #       width  = wd * self.cell_pixels 
+  #       height = ht * self.cell_pixels 
+  #       px, py = self.grid_to_pixels([x,y])
+        
+  #       if canvas_index == Level.Base and canvas_index == area_canvas:
+
+  #         self.draw_rect( canvas_index, width, height, area[1], px, py )  
+        
+  #       elif canvas_index > Level.Base:
+  #         # draw area borders if specified
+
+  #         half_border_width = math.floor(self.border_width / 2)
+
+  #         ax = px
+  #         ay = py
+  #         aht = height
+  #         awd = width
+
+
+  #         # adjust the area at the edges to compensate for border
+  #         if y == 0: 
+  #           ay = py - half_border_width
+  #           aht += half_border_width            
+          
+  #         if (y+ht) == self.grid.height: 
+  #           ay = py + (half_border_width-1)
+  #           aht += half_border_width        
+
+  #         if x == 0: 
+  #           ax = px - half_border_width
+  #           awd += half_border_width            
+
+  #         if (x+wd) == self.grid.width: 
+  #           ax = px + (half_border_width-1)
+  #           awd += half_border_width                     
+
+  #         self.draw_rect( area_canvas, awd, aht, area[1], ax, ay )   
+
+  #         if canvas_index == Level.Underlay:        
+
+  #           if len(area) == 4: 
+
+  #             canvas = self.canvases[Level.Grid]
+  #             canvas.set_line_dash([0,0])
+  #             canvas.line_cap = 'square'    
+
+  #             for border in area[3]:              
+                
+  #               edge = border[0]
+  #               canvas.stroke_style = border[1] if len(border) > 1 else self.border_color                                                
+  #               line_width = border[2] if len(border) == 3 else self.border_width                     
+  #               canvas.line_width = line_width
+                
+  #               def draw_wall( x1,y1,x2,y2 ):
+  #                   canvas.begin_path()
+  #                   canvas.move_to(x1 , y1 )
+  #                   canvas.line_to(x2 , y2 )
+  #                   canvas.stroke()
+
+  #               if   edge == 'N': draw_wall( px, py, px+width, py ) 
+  #               elif edge == 'S': draw_wall( px, py+height, px+width, py+height ) 
+  #               elif edge == 'E': draw_wall( px+width, py, px+width, py+height ) 
+  #               elif edge == 'W': draw_wall( px, py, px, py+height )                                   
+
+  #     except:
+  #       # ignore bad entries
+  #       pass      
+
+
   def draw_grid(self,canvas):        
     ''' add dashed lines showing grid '''             
     # canvas.clear()
@@ -221,7 +447,7 @@ class DrawGrid():
   def draw_border(self,canvas):
     ''' draw the level border '''     
     canvas.stroke_style = self.border_color
-    canvas.line_width = 5
+    canvas.line_width = self.border_width
     canvas.set_line_dash([0,0])
     canvas.stroke_rect(self.padding, 
                        self.padding, 
@@ -366,6 +592,8 @@ class DrawGrid():
       Main Draw Routine
   '''
 
+
+
   def draw_level(self):
     ''' draw the base of the grid ''' 
 
@@ -377,16 +605,22 @@ class DrawGrid():
 
     # put the coloured rectangle on the base layer    
     self.draw_rect(Level.Base, self.width_pixels, self.height_pixels, self.base_color)   
+
+    # change the color of any areas that have been specified as grid level
+    self.draw_grid_areas()         
         
     canvas = self.canvases[Level.Grid]
     
     # change after ipycanvas v11?
-    with hold_canvas(canvas):           
+    with hold_canvas(canvas):        
       self.draw_start(canvas)
       self.draw_exit(canvas)   
       self.draw_grid(canvas)
+      # self.draw_areas(canvas_index=Level.Grid)         
       self.draw_maze(canvas) 
-      self.draw_border(canvas)  
+      self.draw_border(canvas)        
+      # self.draw_areas(canvas_index=Level.Underlay) 
+      self.draw_base_areas()        
       self.draw_compass(canvas) 
 
     # draw puddles separately as may require loading of a sprite

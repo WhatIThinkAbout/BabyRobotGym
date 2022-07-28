@@ -138,7 +138,7 @@ class DrawInfo():
   def process_text(self,info):
       ''' test if any text has been specified to add to the grid '''
 
-      text = info.get('text',None)
+      text = info.get('text',None)      
       if text is not None:
         if isinstance(text,np.ndarray):
           self.draw_text_array(text)
@@ -301,6 +301,10 @@ class DrawInfo():
 
   def draw_cell_text( self, x, y, value, color = None, back_color = None ):
     ''' display the given value in the specified cell '''    
+    
+    # dont draw anything if no text is supplied
+    if type(value).__name__=='str' and len(value) == 0:
+      return
 
     # limit floating point values to the default precision
     if isinstance(value, float):

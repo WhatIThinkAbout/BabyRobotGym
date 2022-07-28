@@ -33,6 +33,9 @@ notebooks/.*
 notebooks/Part\ 2*
 
 notebooks/images/canvas_level/
+notebooks/images_hide/
+notebooks/themes/
+examples/images/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
