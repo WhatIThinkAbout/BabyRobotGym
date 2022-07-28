@@ -8,6 +8,9 @@
 The code in this repository accompanies the Towards Data Science article _[<b>Creating a Custom Gym Environment for Jupyter Notebooks</b> - <i>Part 1: Creating the framework</i>](https://towardsdatascience.com/creating-a-custom-gym-environment-for-jupyter-notebooks-e17024474617)_ and shows the steps required to create a custom gym environment with graphical output in a Jupyter notebook.
 
 
+<center><img src="notebooks/images/green_babyrobot_small.gif"/></center>
+
+
 ## To install:
 
 ```
