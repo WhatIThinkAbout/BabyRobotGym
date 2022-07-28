@@ -1,11 +1,30 @@
 # BabyRobotGym
-An OpenAI Gym Environment for Baby Robot
-
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/WhatIThinkAbout/BabyRobotGym/blob/main/baby_robot_gym_test.ipynb)
-
+### A Reinforcement Learning Gym Environment for Baby Robot
 
 The code in this repository accompanies the Towards Data Science article _[<b>Creating a Custom Gym Environment for Jupyter Notebooks</b> - <i>Part 1: Creating the framework</i>](https://towardsdatascience.com/creating-a-custom-gym-environment-for-jupyter-notebooks-e17024474617)_ and shows the steps required to create a custom gym environment with graphical output in a Jupyter notebook.
+
+
+## To install:
+
+```
+pip install babyrobot
+```
+
+
+
+The example notebook, showing all of the API calls used to create a Baby Robot Gym environment can be opened here:
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/WhatIThinkAbout/BabyRobotGym/blob/notebooks/BabyRobot_API.ipynb)
+
+
+
+## Getting the Github Code:
+
+### Testing
+
+The test notebook, showing how to run a simple RL environment can be opened here:
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/WhatIThinkAbout/BabyRobotGym/blob/main/baby_robot_gym_test.ipynb)
 
 
 ## Cloning the Github repository
