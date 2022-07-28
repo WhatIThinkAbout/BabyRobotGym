@@ -11,11 +11,11 @@ pip install babyrobot
 ```
 
 
+### API Example
 
 The example notebook, showing all of the API calls used to create a Baby Robot Gym environment can be opened here:
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/WhatIThinkAbout/BabyRobotGym/blob/notebooks/BabyRobot_API.ipynb)
-
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/WhatIThinkAbout/BabyRobotGym/blob/main/notebooks/BabyRobot_API.ipynb)
 
 
 ## Getting the Github Code:
