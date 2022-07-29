@@ -30,7 +30,7 @@ tests/
 
 ! notebooks/
 notebooks/.*
-notebooks/Part\ 2*
+
 
 notebooks/images/canvas_level/
 notebooks/images_hide/
