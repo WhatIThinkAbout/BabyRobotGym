@@ -1,5 +1,5 @@
 from gym.envs.registration import register
-
+from ._version import __version__
 
 #
 # Release Gym Environments

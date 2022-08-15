@@ -2,6 +2,9 @@
 
 # Standard library imports
 import pathlib
+from os.path import join
+
+from jupyter_packaging import get_version
 
 # Third party imports
 from setuptools import find_packages, setup
@@ -12,10 +15,16 @@ HERE = pathlib.Path(__file__).resolve().parent
 # The text of the README file is used as a description
 README = (HERE / "README.md").read_text()
 
+# The name of the project
+PROJECT = 'babyrobot'
+
+# Get our version
+VERSION = get_version(join(PROJECT, '_version.py'))
+
 # This call to setup() does all the work
 setup(
-    name="babyrobot",
-    version="1.0.2",
+    name=PROJECT,
+    version=VERSION,
     description="An OpenAI Gym Environment for BabyRobot",
     long_description=README,
     long_description_content_type="text/markdown",
