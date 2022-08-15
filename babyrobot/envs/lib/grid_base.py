@@ -86,15 +86,28 @@ class GridBase():
       self.maze = Maze(self.width, self.height, self.start[0], self.start[1], no_walls = True)
       self.add_maze = True # we now have a maze to add to the canvas
 
-    for (x, y), direction in walls:
+    for (loc), direction in walls:
+      x = loc[0]
+      y = loc[1]
+      num_cells = loc[2] if len(loc) == 3 else 1
+
+      for n in range(num_cells):
+
+        if x >= self.width or y >= self.height:
+          break         
+
         current_cell = self.maze.cell_at(x,y)
         if   direction == 'E': next_cell = self.maze.cell_at(x+1,y)
         elif direction == 'W': next_cell = self.maze.cell_at(x-1,y)
         elif direction == 'N': next_cell = self.maze.cell_at(x,y-1)
         elif direction == 'S': next_cell = self.maze.cell_at(x,y+1)
-        
+      
         # add a new wall if none already otherwise remove
         current_cell.toggle_wall(next_cell, direction)           
+
+        # move to the next cell for wall repeated across multiple cells
+        if direction == 'E' or direction == 'W': y += 1
+        else: x += 1                  
 
 
   '''
