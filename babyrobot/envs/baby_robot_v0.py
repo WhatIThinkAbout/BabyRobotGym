@@ -127,7 +127,11 @@ class BabyRobot_v0(gym.Env):
 
     def clear_info(self,all_info=False):
         ''' clear any current information of the grid level '''
-        self.level.clear(all_info)         
+        self.level.clear(all_info)
+
+    def save(self, filename):
+        ''' save the level as an image to the specified file '''
+        self.level.save(filename)  
 
 
     #

@@ -121,7 +121,11 @@ class GridLevel():
 
   def save( self, filename ):
     ''' render the grid canvases '''    
-    return self.get_canvases().to_file(filename)
+    canvases = self.get_canvases()
+    # save and restore to complete any canvas drawing
+    canvases[3].save()
+    canvases[3].restore()
+    return canvases.to_file(filename)    
 
   def get_canvases(self):
     ''' get the grid levels multi-canvas '''
