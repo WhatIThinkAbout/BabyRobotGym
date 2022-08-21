@@ -1,5 +1,6 @@
 
 import numpy as np
+from numpy import inf
 from ipycanvas import hold_canvas
 from .draw_grid import DrawGrid, Level
 from .grid_info import GridInfo
@@ -50,17 +51,17 @@ class DrawInfo():
       # test if a floating point precision has been defined
       self.precision = props.get('precision', self.precision)
 
-      # process anything to add to the info panel
-      self.process_info(props)
-
-      # process any text to add to the grid
-      self.process_text(props)
-
       # test if any directions have been specified to add to the grid
       directions = props.get('directions',None)
       if directions is not None:
         self.process_direction_arrows(directions)
-        self.process_direction_text(directions)    
+        self.process_direction_text(directions)        
+
+      # process any text to add to the grid
+      self.process_text(props)
+
+      # process anything to add to the info panel
+      self.process_info(props)
 
       # test if coordinates should be added to the grid
       if props.get('coords',False):
@@ -288,6 +289,7 @@ class DrawInfo():
     canvas = self.canvas
     with hold_canvas(canvas): 
       
+      canvas.save()
       canvas.clear_rect(x,y-5,width,height)        
       canvas.fill_style = bk_color
       canvas.fill_rect(x,y-5,width,height) 
@@ -296,19 +298,28 @@ class DrawInfo():
       canvas.text_align = text_align
       canvas.text_baseline = text_baseline
       canvas.font = font
-      canvas.fill_text(text, x, y)            
+      canvas.fill_text(text, x, y)
+      canvas.restore()   
 
 
   def draw_cell_text( self, x, y, value, color = None, back_color = None ):
     ''' display the given value in the specified cell '''    
     
     # dont draw anything if no text is supplied
-    if type(value).__name__=='str' and len(value) == 0:
+    if type(value).__name__=='str':
+      if len(value) == 0:
+        return
+    elif np.isnan(value):
+      # don't show anything for NaN number values
       return
-
+    
     # limit floating point values to the default precision
     if isinstance(value, float):
-      value = round(value,self.precision)
+      if self.precision == 0:
+        # convert to int if set to have no decimal places
+        value = value.astype(int)
+      else:
+        value = round(value,self.precision)
     
     canvas = self.canvas
     padding = self.draw_grid.padding

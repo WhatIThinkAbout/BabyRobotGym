@@ -490,9 +490,14 @@ class DrawGrid():
     # test if puddles have been defined
     if self.grid.puddles:      
       canvas = self.canvases[Level.Grid]
-      with hold_canvas(canvas):     
-        for (x, y), puddle_size in self.grid.puddles:
-          self.draw_splash( canvas, x, y, puddle_size )    
+      with hold_canvas(canvas):  
+        if isinstance(self.grid.puddles[0],list):
+          for row in range(self.grid.height):
+            for col in range(self.grid.width):
+              self.draw_splash( canvas, col, row, self.grid.puddles[row][col] ) 
+        else:
+          for (x, y), puddle_size in self.grid.puddles:
+            self.draw_splash( canvas, x, y, puddle_size )     
 
 
   def draw_splash(self,canvas,x,y,puddle_type):

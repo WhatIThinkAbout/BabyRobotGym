@@ -117,9 +117,12 @@ class GridBase():
   def get_puddle_size( self, x, y ):
     ''' get the size of the puddle at the supplied location '''
     if self.puddles is not None:
-      for (px,py),puddle_size in self.puddles:
-        if x==px and y==py:         
-          return Puddle(puddle_size)   
+      if isinstance(self.puddles[0],list):
+        return Puddle(self.puddles[y][x])
+      else:
+        for (px,py),puddle_size in self.puddles:
+          if x==px and y==py:         
+            return Puddle(puddle_size) 
 
     return Puddle.Dry    
 

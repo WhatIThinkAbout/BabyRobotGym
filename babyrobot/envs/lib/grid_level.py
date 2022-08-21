@@ -89,11 +89,7 @@ class GridLevel():
       target_state_reached = False
 
     # calculate the postion of the next state
-    next_pos = []    
-    if direction == 'N': next_pos = [x,y-1]
-    if direction == 'S': next_pos = [x,y+1]
-    if direction == 'E': next_pos = [x+1,y]
-    if direction == 'W': next_pos = [x-1,y] 
+    next_pos = self.get_next_state_position( x, y, direction )   
 
     # get the reward for taking this action
     reward = self.grid_base.get_reward( next_pos[0], next_pos[1] )
@@ -101,6 +97,33 @@ class GridLevel():
     # for equal probability of taking an action its just the mean of all actions
     return next_pos, reward, target_state_reached  
 
+
+  def get_next_state_position( self, x, y, direction ):
+    ''' given the current state position and direction calculate the postion of the next state '''
+    next_pos = []    
+    if direction == 'N': next_pos = [x,y-1]
+    if direction == 'S': next_pos = [x,y+1]
+    if direction == 'E': next_pos = [x+1,y]
+    if direction == 'W': next_pos = [x-1,y] 
+    return next_pos
+
+
+  def get_reward( self, x, y, direction = None ):
+    ''' get the reward for moving to the cell at (x,y) or, if a direction is specified, 
+        the reward for moving from the cell at (x,y) to the cell in the specified direction
+    '''
+    if direction:
+
+      # if the direction is given as an enum convert to char
+      if type(direction) != str:
+        direction = Direction.get_direction_char(direction)
+
+      # calculate the postion of the next state
+      nx,ny = self.get_next_state_position( x, y, direction )
+      return self.grid_base.get_reward(nx,ny),[nx,ny]
+
+    # get the reward for taking this action
+    return self.grid_base.get_reward(x,y)    
     
 
   '''
@@ -130,3 +153,8 @@ class GridLevel():
   def get_canvases(self):
     ''' get the grid levels multi-canvas '''
     return self.draw_grid.canvases
+
+  def get_canvas_dimensions( self ):
+    ''' get the total size of the grid canvas in pixels '''
+    return [self.draw_grid.total_width, self.draw_grid.total_height]
+        

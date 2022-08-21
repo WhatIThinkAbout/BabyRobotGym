@@ -37,7 +37,10 @@ class RobotDraw( RobotPosition ):
       # the offset of the grid display
       offset = kwargs.get('offset',[0,0])  
       self.x_offset = offset[0]
-      self.y_offset = offset[1]      
+      self.y_offset = offset[1]
+
+      # test that baby robot should be shown
+      self.show_robot = robot_params.get('show',True)
 
       # get robot speed parameters      
       self.sleep = robot_params.get('sleep',0.07)    
@@ -45,7 +48,7 @@ class RobotDraw( RobotPosition ):
 
       # the initial robot sprite (4 = center view)
       self.sprite_index = robot_params.get('initial_sprite',4)     
-      self.load_sprites()    
+      self.load_sprites()
 
 
   def get_number_of_sprites(self):
@@ -60,6 +63,19 @@ class RobotDraw( RobotPosition ):
       self.sprite = Image.from_file(image_path)         
 
 
+  def add_sprite(self,index):
+      ''' add an image sprite with the specified index from an individual image 
+          to the set of sprites to use for robot drawing
+      '''
+      # currently using individual sprite images rather than sprite sheet to fix Colab
+      image_path = os.path.join(self.level.working_directory, f'images/baby_robot_{index}.png')
+      sprites = Image.from_file(image_path)
+      # put all sprites onto their own canvas
+      canvas = Canvas(width=self.robot_size, height=self.robot_size)
+      canvas.draw_image(sprites, 0, 0)
+      self.canvas_sprites.append(canvas)      
+
+
   def load_sprites(self):
       ''' load the sprites used to draw baby robot
           - on Colab it seems to be limited to a single image and not on a canvas
@@ -71,13 +87,9 @@ class RobotDraw( RobotPosition ):
         # load all sprites
         for row in range(5):
           for col in range(2):           
-            index = row + col
-            image_path = os.path.join(self.level.working_directory, f'images/baby_robot_{index}.png')
-            sprites = Image.from_file(image_path)
-            # put all sprites onto their own canvas
-            canvas = Canvas(width=self.robot_size, height=self.robot_size)
-            canvas.draw_image(sprites, 0, 0)
-            self.canvas_sprites.append(canvas) 
+            index = (row*2) + col
+            self.add_sprite(index)
+        self.add_sprite(index+1)          
 
 
   def update_sprite(self):
@@ -107,13 +119,14 @@ class RobotDraw( RobotPosition ):
       elif self.sprite_index < self.get_number_of_sprites():
         with hold_canvas(self.canvas):
           self.canvas.clear_rect(x, y, self.robot_size)                       
-          self.canvas.draw_image(self.canvas_sprites[index], x, y )                        
+          self.canvas.draw_image(self.canvas_sprites[index], x, y )                            
       
 
   def draw(self):    
-      ' add the current sprite at the current position '     
-      self.draw_sprite(self.sprite_index)
-      self.update_sprite()      
+      ' add the current sprite at the current position '  
+      if self.show_robot:   
+        self.draw_sprite(self.sprite_index)
+        self.update_sprite()      
 
 
   def move_direction(self,direction):        
