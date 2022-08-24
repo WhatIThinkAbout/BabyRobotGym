@@ -10,6 +10,8 @@ from .baby_robot_interface import BabyRobotInterface
 
 class BabyRobot_v0( BabyRobotInterface ):
     ''' Baby Robot Gym Environment '''
+
+    metadata = {'render_modes': ['human'], 'render_fps': 4}
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs) 
@@ -26,7 +28,7 @@ class BabyRobot_v0( BabyRobotInterface ):
           self.action_space = Discrete(5)        
 
         # the observation will be the coordinates of Baby Robot            
-        self.observation_space = MultiDiscrete([self.width, self.height])                             
+        self.observation_space = MultiDiscrete([self.width, self.height])  
 
 
     #
@@ -34,20 +36,31 @@ class BabyRobot_v0( BabyRobotInterface ):
     #
 
     def step(self, action): 
-        ''' take the action and update the position '''        
+        ''' take the action and update the position 
+        
+            - under the latest version of Gym a single 'done' value is no longer returned, instead 2 boolean values are used:
+            (from the Gym documentation)
+
+            terminated (bool): whether a `terminal state` (as defined under the MDP of the task) is reached.
+                In this case further step() calls could return undefined results.
+            truncated (bool): whether a truncation condition outside the scope of the MDP is satisfied.
+                Typically a timelimit, but could also be used to indicate agent physically going out of bounds.
+                Can be used to end the episode prematurely before a `terminal state` is reached.            
+        
+        '''        
         reward, target_reached = self.take_action(action)      
         obs = np.array([self.x,self.y])      
             
         # set the 'done' flag if we've reached the exit
-        done = (self.x == self.end[0]) and (self.y == self.end[1])
-          
+        terminated = (self.x == self.end[0]) and (self.y == self.end[1])
+        truncated = False
+
         info = {'target_reached':target_reached}
-        return obs, reward, done, info 
+        return obs, reward, terminated, truncated, info 
 
 
     def render(self, mode='human', info=None ):                 
-        ''' render as an HTML5 canvas '''
-              
+        ''' render as an HTML5 canvas '''           
         # move baby robot to the current position
         self.robot.move(self.x,self.y) 
 

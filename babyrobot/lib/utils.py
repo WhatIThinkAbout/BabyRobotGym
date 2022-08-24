@@ -6,6 +6,7 @@ from ipywidgets import Layout
 from ipywidgets import Play, IntProgress, HBox, VBox, link
 import imageio
 import os
+import gym
 
 
 class Utils():
@@ -34,3 +35,35 @@ class Utils():
         if os.path.exists(file):
           image = imageio.imread(file)
           _ = writer.append_data(image)     
+
+          
+
+
+def make( id: str, **setup: dict ):
+  ''' custom make function for BabyRobot (used instead of 'gym.make')
+      
+    * In the latest version of Gym it forces the 'reset' function to be called
+      before 'render'. This gives the error:        
+      "Cannot call `env.render()` before calling `env.reset()`")
+      
+      Since we want to just create and then draw the environment
+      we want to turn this off (using "env._disable_render_order_enforcing=True")
+
+    * The render mode must be supplied to the make operation, otherwise you get 
+      the warning:
+
+      "You are calling render method, but you didn't specified the argument render_mode 
+      at environment initialization."
+
+    * The 'step' function now, instead of returning a single 'done' boolean to indicate
+      the end of the episode, returns 2 booleans, 'terminated' and 'truncated'. 
+      The 'new_step_api=True' parameter is required to stop a warning appearing:
+      "Initializing wrapper in old step API"
+
+    * id: The string used to create the environment with `gym.make`
+  '''
+  env = gym.make(id, new_step_api=True, render_mode='human', **setup)
+  env._disable_render_order_enforcing=True  
+  return env    
+
+

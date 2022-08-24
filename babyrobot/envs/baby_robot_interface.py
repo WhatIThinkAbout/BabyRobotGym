@@ -15,7 +15,7 @@ class BabyRobotInterface(gym.Env):
     ''' Baby Robot Gym Environment Base Class '''
 
     def __init__(self, **kwargs):
-        super().__init__()    
+        super().__init__()
 
         # initially no actions are available      
         self.dynamic_action_space = Dynamic()          

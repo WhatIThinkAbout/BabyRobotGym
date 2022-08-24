@@ -39,5 +39,5 @@ setup(
     ],
     packages = find_packages(exclude=("tests",)),
     include_package_data=True,
-    install_requires=['gym','ipycanvas==0.11']    
+    install_requires=['gym==0.25.2','ipycanvas==0.11']    
 )
