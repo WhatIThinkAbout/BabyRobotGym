@@ -39,7 +39,7 @@ class Utils():
           
 
 
-def make( id: str, **setup: dict ):
+def make( id: str, new_step_api=True, **setup: dict ):
   ''' custom make function for BabyRobot (used instead of 'gym.make')
       
     * In the latest version of Gym it forces the 'reset' function to be called
@@ -62,7 +62,9 @@ def make( id: str, **setup: dict ):
 
     * id: The string used to create the environment with `gym.make`
   '''
-  env = gym.make(id, new_step_api=True, render_mode='human', **setup)
+  setup['new_step_api'] = new_step_api
+  setup['render_mode'] = 'human'
+  env = gym.make(id, **setup)  
   env._disable_render_order_enforcing=True  
   return env    
 

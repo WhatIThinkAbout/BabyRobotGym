@@ -16,12 +16,15 @@ class BabyRobot_v0( BabyRobotInterface ):
     def __init__(self, **kwargs):
         super().__init__(**kwargs) 
 
+        # test if the 'step' function should use the new, 2 boolean, return format
+        self.new_step_api = kwargs.get('new_step_api',True)
+
         # by default use a dynamic action space 
         if kwargs.get('action_space','dynamic') == 'dynamic':
           self.action_space = self.dynamic_action_space              
         else:
           # use discrete action space 
-          # - required for Stable Baselines environment checker which cant yet
+          # - required for Stable Baselines environment checker which can't yet
           #   recognise dynamic spaces
           # - all actions are available in each state
           # - there are 5 possible actions: move N,E,S,W or stay in same state
@@ -51,12 +54,20 @@ class BabyRobot_v0( BabyRobotInterface ):
         reward, target_reached = self.take_action(action)      
         obs = np.array([self.x,self.y])      
             
-        # set the 'done' flag if we've reached the exit
+        # set the 'terminated' flag if we've reached the exit
+        # (previously this was called 'done')
         terminated = (self.x == self.end[0]) and (self.y == self.end[1])
         truncated = False
 
         info = {'target_reached':target_reached}
-        return obs, reward, terminated, truncated, info 
+
+        if self.new_step_api:
+          # new style return format - uses 2 booleans
+          return obs, reward, terminated, truncated, info 
+        else:
+          # old style return format - uses a single boolean to indicate episode termination
+          return obs, reward, terminated, info 
+
 
 
     def render(self, mode='human', info=None ):                 

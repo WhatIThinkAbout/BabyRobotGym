@@ -306,12 +306,13 @@ class DrawInfo():
     ''' display the given value in the specified cell '''    
     
     # dont draw anything if no text is supplied
-    if type(value).__name__=='str':
+    if type(value).__name__.startswith('str'):
       if len(value) == 0:
         return
-    elif np.isnan(value):
-      # don't show anything for NaN number values
-      return
+    elif isinstance(x, (int, float, complex)) and not isinstance(x, bool):
+      if np.isnan(value):
+        # don't show anything for NaN number values
+        return
     
     # limit floating point values to the default precision
     if isinstance(value, float):
