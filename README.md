@@ -22,7 +22,8 @@ pip install babyrobot
 
 The example notebook, showing all of the API calls used to create a Baby Robot Gym environment can be opened here:
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/WhatIThinkAbout/BabyRobotGym/blob/main/notebooks/BabyRobot_API.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/WhatIThinkAbout/BabyRobotGym/HEAD?labpath=notebooks%2FBabyRobot_API.ipynb)
+
 
 
 ### Training Example
