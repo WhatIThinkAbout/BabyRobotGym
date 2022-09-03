@@ -1,4 +1,5 @@
 babyrobot==1.0.12
 gym==0.25.2
+imageio==2.19.0
 ipycanvas==0.11.0
 jupyter-packaging==0.12.2
