@@ -139,3 +139,4 @@ dmypy.json
 .pyre/
 notebooks/green_theme.png
 .vscode/launch.json
+requirements_full.txt
