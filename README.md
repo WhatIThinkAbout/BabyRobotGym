@@ -24,6 +24,11 @@ The example notebook, showing all of the API calls used to create a Baby Robot G
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/WhatIThinkAbout/BabyRobotGym/HEAD?labpath=notebooks%2FBabyRobot_API.ipynb)
 
+### Reinforcement Learning
+
+## Part 1: [State Values and Policy Evaluation](https://towardsdatascience.com/state-values-and-policy-evaluation-ceefdd8c2369)
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/WhatIThinkAbout/BabyRobotGym/HEAD?labpath=notebooks%2FReinforcement%20Learning%2FPart%201%20-%20State%20Values%20and%20Policy%20Evaluation.ipynb)
 
 
 ### Training Example
