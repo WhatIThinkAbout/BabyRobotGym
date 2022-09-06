@@ -18,14 +18,15 @@ class Level(IntEnum):
     Base     = 0
     Grid     = 1
     Underlay = 2    
-    Robot    = 3
+    Robot    = 3    
     Overlay  = 4
+    Text     = 5
 
 
 
 class DrawGrid():
 
-  num_canvases = 5           # number of canvases/layers
+  num_canvases = 6           # number of canvases/layers
   cell_pixels = 64           # pixel dimensions of a grid square     
   padding = 2                # padding around the cells
   wall_width = 4             # the width of maze walls  
@@ -323,86 +324,6 @@ class DrawGrid():
       canvas.stroke()      
 
 
-  # def draw_areas(self,canvas_index=0):
-  #   ''' change the base color for any specified areas '''    
-  #   for area in self.base_areas:
-  #     try:  
-  #       x,y,*args = area[0]  
-  #       wd,ht = args if args else (1,1)
-        
-  #       # by default draw areas to the base canvas unless another index
-  #       # is specified
-  #       area_canvas = area[2] if len(area) >= 3 else Level.Base
-
-  #       width  = wd * self.cell_pixels 
-  #       height = ht * self.cell_pixels 
-  #       px, py = self.grid_to_pixels([x,y])
-        
-  #       if canvas_index == Level.Base and canvas_index == area_canvas:
-
-  #         self.draw_rect( canvas_index, width, height, area[1], px, py )  
-        
-  #       elif canvas_index > Level.Base:
-  #         # draw area borders if specified
-
-  #         half_border_width = math.floor(self.border_width / 2)
-
-  #         ax = px
-  #         ay = py
-  #         aht = height
-  #         awd = width
-
-
-  #         # adjust the area at the edges to compensate for border
-  #         if y == 0: 
-  #           ay = py - half_border_width
-  #           aht += half_border_width            
-          
-  #         if (y+ht) == self.grid.height: 
-  #           ay = py + (half_border_width-1)
-  #           aht += half_border_width        
-
-  #         if x == 0: 
-  #           ax = px - half_border_width
-  #           awd += half_border_width            
-
-  #         if (x+wd) == self.grid.width: 
-  #           ax = px + (half_border_width-1)
-  #           awd += half_border_width                     
-
-  #         self.draw_rect( area_canvas, awd, aht, area[1], ax, ay )   
-
-  #         if canvas_index == Level.Underlay:        
-
-  #           if len(area) == 4: 
-
-  #             canvas = self.canvases[Level.Grid]
-  #             canvas.set_line_dash([0,0])
-  #             canvas.line_cap = 'square'    
-
-  #             for border in area[3]:              
-                
-  #               edge = border[0]
-  #               canvas.stroke_style = border[1] if len(border) > 1 else self.border_color                                                
-  #               line_width = border[2] if len(border) == 3 else self.border_width                     
-  #               canvas.line_width = line_width
-                
-  #               def draw_wall( x1,y1,x2,y2 ):
-  #                   canvas.begin_path()
-  #                   canvas.move_to(x1 , y1 )
-  #                   canvas.line_to(x2 , y2 )
-  #                   canvas.stroke()
-
-  #               if   edge == 'N': draw_wall( px, py, px+width, py ) 
-  #               elif edge == 'S': draw_wall( px, py+height, px+width, py+height ) 
-  #               elif edge == 'E': draw_wall( px+width, py, px+width, py+height ) 
-  #               elif edge == 'W': draw_wall( px, py, px, py+height )                                   
-
-  #     except:
-  #       # ignore bad entries
-  #       pass      
-
-
   def draw_grid(self,canvas):        
     ''' add dashed lines showing grid '''             
     # canvas.clear()
@@ -620,11 +541,9 @@ class DrawGrid():
     with hold_canvas(canvas):        
       self.draw_start(canvas)
       self.draw_exit(canvas)   
-      self.draw_grid(canvas)
-      # self.draw_areas(canvas_index=Level.Grid)         
+      self.draw_grid(canvas)      
       self.draw_maze(canvas) 
-      self.draw_border(canvas)        
-      # self.draw_areas(canvas_index=Level.Underlay) 
+      self.draw_border(canvas)              
       self.draw_base_areas()        
       self.draw_compass(canvas) 
 

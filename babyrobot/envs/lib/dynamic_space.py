@@ -1,5 +1,7 @@
+from argparse import Action
 import gym
 import numpy as np
+from babyrobot.envs.lib.actions import Actions
 
 class Dynamic(gym.Space):
 
@@ -9,7 +11,9 @@ class Dynamic(gym.Space):
       
   def sample(self):
       ' select a random action from the set of available actions '
-      return np.random.choice(self.available_actions)    
+      if len(self.available_actions) > 0:
+        return np.random.choice(self.available_actions)    
+      return Actions.Stay
     
   def set_actions(self,actions):
       self.available_actions = actions

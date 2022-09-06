@@ -84,19 +84,14 @@ class BabyRobotInterface(gym.Env):
         ''' test which actions are allowed at the specified grid state '''
 
         # if no coordinate supplied use the current position
-        if not x: x = self.x
-        if not y: y = self.y
+        if x is None: x = self.x
+        if y is None: y = self.y
 
         # get the available actions from the grid level
         direction_value = self.level.get_directions(x,y) 
 
         # convert the grid directions into environment actions
-        action_list = []       
-        if direction_value & Direction.North: action_list.append( Actions.North )
-        if direction_value & Direction.South: action_list.append( Actions.South )
-        if direction_value & Direction.East:  action_list.append( Actions.East ) 
-        if direction_value & Direction.West:  action_list.append( Actions.West )                
-        return action_list     
+        return Direction.get_action_list(direction_value)  
 
               
     def set_available_actions( self ):

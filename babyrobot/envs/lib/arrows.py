@@ -37,22 +37,23 @@ class Arrows():
     canvas.line_to(self.cx,self.cy + shift + self.line_length )      
     canvas.stroke()              
     
-  def draw_vert_arrow(self,canvas,y1,y2):
+  def draw_vert_arrow(self,canvas,y1,y2):   
     canvas.begin_path()
     canvas.move_to(self.cx, y2)
     canvas.line_to(self.cx + self.a_width, y1)
     canvas.line_to(self.cx - self.a_width, y1)
-    canvas.fill() 
-    
+    canvas.fill()    
+        
   def draw_horz_arrow(self,canvas,x1,x2):
     canvas.begin_path()
     canvas.move_to(x2, self.cy)
     canvas.line_to(x1, self.cy + self.a_width)
     canvas.line_to(x1, self.cy - self.a_width)
-    canvas.fill()            
+    canvas.fill()
     
-  def draw_arrow(self,canvas,x,y,direction):
-    
+        
+  def draw_arrow(self,canvas,x,y,direction):     
+
     if direction == Direction.North: 
       y1 = self.cy - self.line_length + 1
       y2 = y1 - self.a_height + 1
@@ -84,16 +85,16 @@ class Arrows():
     if type(directions) is not list:
       # convert the direction value into a list of directions
       directions = Direction.get_list( directions )     
-
+        
     canvas.line_width = 3
     canvas.fill_style = color
     canvas.stroke_style = color      
     
     self.set_center(x,y)    
     for direction in directions:          
-      self.draw_arrow(canvas,x,y,direction)  
+      self.draw_arrow(canvas,x,y,direction)          
     
     # if a center width is defined then clear this area    
     if center_width > 0: 
       center_start = center_width//2
-      canvas.clear_rect(self.cx-center_start,self.cy-center_start,center_width,center_width) 
+      canvas.clear_rect(self.cx-center_start,self.cy-center_start,center_width,center_width)      

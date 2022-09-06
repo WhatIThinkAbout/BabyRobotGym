@@ -66,6 +66,17 @@ class Direction(IntFlag):
       if direction_value & Direction.West:  dir_list.append( Direction.West )    
       return dir_list
 
+
+    def get_action_list( direction_value: int ) -> List[int]:
+      ''' convert a direction bitfield value into a list of actions ''' 
+      action_list = []       
+      if direction_value & Direction.North: action_list.append( Actions.North )
+      if direction_value & Direction.South: action_list.append( Actions.South )
+      if direction_value & Direction.East:  action_list.append( Actions.East ) 
+      if direction_value & Direction.West:  action_list.append( Actions.West )                
+      return action_list        
+
+
     def get_direction_char( direction: int ):
       ''' convert the direction value into a character '''
       if direction == Direction.North: return "N"      
@@ -74,11 +85,13 @@ class Direction(IntFlag):
       if direction == Direction.West:  return "W"       
       return ""      
 
+
     def from_action( action_value: Actions):
       ''' convert an action value to a direction '''
       if Actions(action_value) is not Actions.Stay:              
         return Direction(pow(2, action_value-1))
       return Direction.Stay
+
 
     def from_actions( action_values: Actions):
       ''' convert an array of action values to a direction bitfield '''

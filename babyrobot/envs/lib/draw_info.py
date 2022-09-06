@@ -27,8 +27,8 @@ class DrawInfo():
     self.grid_info = grid_info
 
     # get the underlying grid drawing and canvases
-    self.draw_grid = draw_grid
-    self.canvas = self.draw_grid.canvases[Level.Overlay]
+    self.draw_grid = draw_grid    
+    self.canvas = self.draw_grid.canvases[Level.Text]
 
     # setup the grid properties
     self.set_properties(kwargs.get('grid',None))   
@@ -53,9 +53,9 @@ class DrawInfo():
 
       # test if any directions have been specified to add to the grid
       directions = props.get('directions',None)
-      if directions is not None:
+      if directions is not None:                                
         self.process_direction_arrows(directions)
-        self.process_direction_text(directions)        
+        self.process_direction_text(directions)
 
       # process any text to add to the grid
       self.process_text(props)
@@ -106,7 +106,16 @@ class DrawInfo():
           bk_color = self.draw_grid.side_panel.get('color','white')           
 
         # put text on side panel
-        if self.draw_grid.side_panel:          
+        if self.draw_grid.side_panel:
+
+          # clear existing text
+          for item in text:
+            (cx,cy),value,width,height = self.set_default_values(item)
+
+            # offset by the grid width to get the start of the side panel
+            cx += self.draw_grid.width_pixels            
+            self.clear_info_panel_text( cx, cy, width, height, bk_color)
+
           for item in text:
             (cx,cy),value,width,height = self.set_default_values(item)
 
@@ -128,6 +137,13 @@ class DrawInfo():
 
         # put text on bottom panel
         if self.draw_grid.bottom_panel:
+
+          # clear existing text
+          for item in text:
+            (cx,cy),value,width,height = self.set_default_values(item)
+            cy += self.draw_grid.height_pixels 
+            self.clear_info_panel_text( cx, cy, width, height, bk_color)
+
           for item in text:
             (cx,cy),value,width,height = self.set_default_values(item)
           
@@ -215,20 +231,23 @@ class DrawInfo():
   def draw_direction_arrow( self, x, y, directions ):   
     ''' draw an arrow in each direction from the supplied list ''' 
     
-    canvas = self.canvas
+    canvas = self.draw_grid.canvases[Level.Overlay]
     color = self.arrow_color    
     padding = self.draw_grid.padding
     cell_pixels = self.draw_grid.cell_pixels
+    px,py = self.draw_grid.grid_to_pixels( [x,y], padding, padding )          
+
+    with hold_canvas(canvas):             
+      canvas.clear_rect(px,py,cell_pixels,cell_pixels)
     
     with hold_canvas(canvas):       
-      px,py = self.draw_grid.grid_to_pixels( [x,y], padding, padding )    
-      canvas.clear_rect(px,py,cell_pixels,cell_pixels) 
-      self.arrows.draw(canvas,px,py,directions,color)   
+      self.arrows.draw(canvas,px,py,directions,color)       
 
 
   def draw_direction_arrow_array(self, directions: np.array):
-    ''' draw arrows in each direction in the supplied numpy array '''        
-    with hold_canvas(self.canvas):    
+    ''' draw arrows in each direction in the supplied numpy array '''  
+    canvas = self.draw_grid.canvases[Level.Overlay]      
+    with hold_canvas(canvas):    
       for y in range(directions.shape[0]):
         for x in range(directions.shape[1]):
           self.draw_direction_arrow( x, y, directions[y,x])    
@@ -247,11 +266,14 @@ class DrawInfo():
 
   def draw_direction_text_array(self,directions):   
     ''' add a text string to each cell showing the directions '''              
-    with hold_canvas(self.canvas):    
-      for y in range(directions.shape[0]):
-        for x in range(directions.shape[1]):
-          if x != self.grid.end[0] or y != self.grid.end[1]: 
-            self.draw_direction_text( x, y, directions[y,x])    
+    
+    # self.canvas.save()
+    # with hold_canvas(self.canvas):    
+    for y in range(directions.shape[0]):
+      for x in range(directions.shape[1]):
+        if x != self.grid.end[0] or y != self.grid.end[1]: 
+          self.draw_direction_text( x, y, directions[y,x])    
+    # self.canvas.restore()
 
   '''
       Coordinates
@@ -285,34 +307,42 @@ class DrawInfo():
                        text_align='left',
                        text_baseline='top'):                       
     ''' add information text in the side panel ''' 
-
     canvas = self.canvas
+    canvas.save()
     with hold_canvas(canvas): 
-      
-      canvas.save()
-      canvas.clear_rect(x,y-5,width,height)        
-      canvas.fill_style = bk_color
-      canvas.fill_rect(x,y-5,width,height) 
-
       canvas.fill_style = fg_color
       canvas.text_align = text_align
       canvas.text_baseline = text_baseline
       canvas.font = font
       canvas.fill_text(text, x, y)
-      canvas.restore()   
+    canvas.restore()
+
+
+  def clear_info_panel_text( self, x, y, width, height, bk_color='#fff'):
+    ''' clear the side panel at the specified location ''' 
+    canvas = self.canvas
+    with hold_canvas(canvas):     
+      canvas.fill_style = bk_color      
+      canvas.fill_rect(x,y-5,width,height) 
 
 
   def draw_cell_text( self, x, y, value, color = None, back_color = None ):
     ''' display the given value in the specified cell '''    
     
     # dont draw anything if no text is supplied
+    num_value = False
     if type(value).__name__.startswith('str'):
       if len(value) == 0:
         return
     elif isinstance(x, (int, float, complex)) and not isinstance(x, bool):
+      num_value = True
       if np.isnan(value):
         # don't show anything for NaN number values
         return
+
+    # dont display text on base areas
+    if self.grid.test_for_base_area(x,y):      
+      return
     
     # limit floating point values to the default precision
     if isinstance(value, float):
@@ -320,7 +350,7 @@ class DrawInfo():
         # convert to int if set to have no decimal places
         value = value.astype(int)
       else:
-        value = round(value,self.precision)
+        value = round(value,self.precision)        
     
     canvas = self.canvas
     padding = self.draw_grid.padding
@@ -346,15 +376,28 @@ class DrawInfo():
     # center the text
     x_off = (bk_width//2)
     y_off = (bk_height//2)
-    
-    with hold_canvas(canvas):                      
-      canvas.clear_rect(cx-x_off,cy-y_off,bk_width,bk_height) 
 
+    # use a smaller font size for high precision, since more digits to fit
+    font_size = 14
+    text_offset = 5
+    if (num_value and self.precision > 1) or \
+       (not num_value and len(str(value)) >= 3):
+          font_size = 12 
+          text_offset = 4
+    font_str = f"bold {font_size}px sans-serif"
+
+    canvas.save()
+
+    with hold_canvas(canvas):                    
+      canvas.clear_rect(cx-x_off,cy-y_off,bk_width,bk_height) 
       if back_color is not None:
         canvas.fill_style = back_color        
         canvas.fill_rect(cx-x_off,cy-y_off,bk_width,bk_height) 
-
+        
+    with hold_canvas(canvas):                         
       canvas.fill_style = color
       canvas.text_align = 'center'
-      canvas.font = 'bold 12px sans-serif'
-      canvas.fill_text(f"{value}", cx, cy+4)            
+      canvas.font = font_str
+      canvas.fill_text(f"{value}", cx, cy+text_offset)
+      
+    canvas.restore()

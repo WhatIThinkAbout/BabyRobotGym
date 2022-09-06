@@ -10,7 +10,7 @@ class Policy():
 
   def __init__(self, level: BabyRobotInterface):    
     self.level = level    
-    self.directions = np.zeros((level.height,level.width),dtype=np.int)
+    self.directions = np.zeros((level.height,level.width),dtype=int)
     
   def set_policy(self,directions):
     ''' set the policy (i.e. the action to take in each state) '''
@@ -45,11 +45,11 @@ class Policy():
     return self.directions
   
   def calculate_greedy_directions(self,values):
-    ''' given a set of state value calculate the directions by acting greedily 
+    ''' given a set of state values calculate the directions by acting greedily 
         i.e. move in the direction of greatest state value
     ''' 
     # calculate the directions of all states except the exit  
-    directions = np.zeros((self.level.height,self.level.width),dtype=np.int)    
+    directions = np.zeros((self.level.height,self.level.width),dtype=int)    
     end = self.level.end
     for y in range(self.level.height):
       for x in range(self.level.width):

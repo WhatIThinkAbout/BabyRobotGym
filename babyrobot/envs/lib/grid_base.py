@@ -160,6 +160,17 @@ class GridBase():
 
     # grid rewards already calculated
     return self.grid_rewards
+
+
+  def test_for_base_area( self, x, y ):
+    ''' test if the specified cell is in a base area '''
+    for area in self.base_areas: 
+      # test if only the area defn has been supplied
+      if type(area[0]).__name__ == 'int':
+        ax,ay,aw,ah = self.get_area_defn(area)
+      else:
+        ax,ay,aw,ah = self.get_area_defn(area[0])      
+      return self.in_area(x,y,ax,ay,aw,ah)
         
 
   def get_reward_value( self, x, y ):
@@ -170,7 +181,14 @@ class GridBase():
         - small puddle = -2
         - large puddle = -4
 
-        This represents the amount of time required to move through the puddle
+        Actions taken in the terminal state have a reward of zero (although once the terminal 
+        state is reached the episode terminates, so no actions will occur)
+        - however, moving to the terminal state still requires some energy to be used, so
+        the reward for taking an action that ends up in the terminal state is also given a 
+        reward of -1.
+
+        This represents the amount of time required to move through the puddle (and therefore
+        the amount of energy used by BabyRobot)
     '''
 
     if len(self.grid_rewards) > 0: 
@@ -178,23 +196,13 @@ class GridBase():
       # - note this holds the rewards as row,col so must swap x and y   
       return self.grid_rewards[y,x]
 
-    # the terminal state has a reward of zero
-    if (x == self.end[0]) and (y == self.end[1]):
-      return 0
-
     puddle_size = self.get_puddle_size( x, y )
     if   puddle_size == Puddle.Large: return self.large_puddle_reward
     elif puddle_size == Puddle.Small: return self.small_puddle_reward  
 
     # no rewards exist off the grid
-    for area in self.base_areas: 
-      # test if only the area defn has been supplied
-      if type(area[0]).__name__ == 'int':
-        ax,ay,aw,ah = self.get_area_defn(area)
-      else:
-        ax,ay,aw,ah = self.get_area_defn(area[0])      
-      if self.in_area(x,y,ax,ay,aw,ah):
-        return 0
+    if self.test_for_base_area(x,y):      
+      return 0
 
     # if any grid areas exist these can set different rewards
     # - the most recently defined area is the one whose reward will be taken
