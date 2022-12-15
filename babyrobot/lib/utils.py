@@ -11,10 +11,10 @@ import gym
 
 class Utils():
 
-  def setup_play_level( level:GridLevel, on_update, interval=1000, min=1, max=8 ):
+  def setup_play_level( level:GridLevel, on_update, interval=1000, min=0, max=8 ):
     ''' setup all the main components required to animate a grid level '''
     play = Play(interval=interval, min=min, max=max, step=1)
-    progress = IntProgress(min=min, max=max, step=1)
+    progress = IntProgress(min=min, max=max)
 
     link((play, 'value'), (progress, 'value'))
     play.observe(on_update, 'value')
@@ -34,8 +34,26 @@ class Utils():
         file = f"{image_folder}/step_{index}.png"
         if os.path.exists(file):
           image = imageio.imread(file)
-          _ = writer.append_data(image)     
+          _ = writer.append_data(image)   
 
+
+  def clear_directory( image_folder ):
+    ''' clear any existing files from the directory '''
+    filelist = [ f for f in os.listdir(image_folder) if f.endswith(".png") ]
+    for f in filelist:
+        os.remove(os.path.join(image_folder, f))      
+
+
+  def create_image_directory( image_folder ):
+    ''' create the specified folder to store each of the images that
+        form an animated gif
+        - if the folder already exists then clear any current files
+    '''
+    if not os.path.exists(image_folder):
+        os.makedirs(image_folder)
+
+    # clear any existing files from the directory
+    Utils.clear_directory( image_folder )
           
 
 

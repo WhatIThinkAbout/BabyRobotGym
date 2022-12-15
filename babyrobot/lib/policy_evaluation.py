@@ -14,8 +14,13 @@ class PolicyEvaluation():
   policy = None
   discount_factor = 1.0  
 
-  def __init__(self, env: BabyRobotInterface, discount_factor=1.0):
-    self.level = env    
+  def __init__(self, env: BabyRobotInterface, policy: Policy, discount_factor=1.0):
+    self.level = env
+
+    # check that a policy has been given to evaluate
+    assert policy is not None, "A Policy must be supplied to PolicyEvaluation." 
+
+    self.policy = policy
     self.discount_factor = discount_factor
     self.reset()
 
@@ -77,7 +82,7 @@ class PolicyEvaluation():
     # get the list of all possible actions in this state
     all_actions = self.level.get_available_actions(x,y)
 
-    # when an action is taken will either end in target state or one of the other possible states
+    # when an action is taken it will either end in target state or one of the other possible states
     # - count the number of states other than the target state
     num_actions = len(all_actions)
     if num_actions > 0:
@@ -98,25 +103,30 @@ class PolicyEvaluation():
 
 
   def calculate_policy_cell_value(self,x,y):
-    ''' calculate the state value for a deterministic policy '''
-        
-    # check that some actions are possible in this state    
-    policy_actions = self.policy.get_actions(x,y)    
+    ''' calculate the state value for a policy '''             
 
-    # a deterministic policy should only have one possible action
-    num_policy_actions = len(policy_actions)
-    if num_policy_actions == 0: 
-      return 0    
-    assert num_policy_actions == 1, f"Policy has more than one action ({x},{y}) actions = {policy_actions}"
+    # get the dictionary of possible actions and their probabilities in this state   
+    actions = self.policy.get_action_probabilities(x,y)   
+    all_actions = list(actions.keys())
+    probabilities = list(actions.values())     
 
-    # get the list of all possible actions in this state
-    all_actions = self.level.get_available_actions(x,y)    
+    # when an action is taken it will either end in target state or one of the other possible states
+    # - count the number of states other than the target state
+    num_actions = len(all_actions)
+    if num_actions > 0:                 
+            
+      # calculate the total value for all possible actions in this state
+      value = 0
+      for chosen_action,probability in zip(all_actions,probabilities):
+        action_value = self.calculate_action_value(x,y,chosen_action,all_actions)       
 
-    # get the value for taking the action specified by the policy
-    value = self.calculate_action_value(x,y,policy_actions[0],all_actions)
-
-    # for equal probability of taking an action its just the mean of all actions
-    return value    
+        # add the action value, multiplied by the probability of taking that action, to the total state value        
+        value += (probability * action_value)
+      
+      return value
+    
+    # no possible actions
+    return 0  
 
 
   def standard_sweep(self):
@@ -167,7 +177,8 @@ class PolicyEvaluation():
 
   def set_discount_factor(self, discount_factor):
     ''' set the discount factor to apply to the future rewards '''
-    self.discount_factor = discount_factor      
+    self.discount_factor = discount_factor
+
 
   def get_iterations(self):
     ''' return the number of iterations of policy evalutation that have been performed '''

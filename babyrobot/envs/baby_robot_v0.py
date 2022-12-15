@@ -2,7 +2,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 
-import gym
+import random
 import numpy as np
 from gym.spaces import Discrete, MultiDiscrete
 from .baby_robot_interface import BabyRobotInterface
@@ -69,7 +69,6 @@ class BabyRobot_v0( BabyRobotInterface ):
           return obs, reward, terminated, info 
 
 
-
     def render(self, mode='human', info=None ):                 
         ''' render as an HTML5 canvas '''           
         # move baby robot to the current position
@@ -80,8 +79,10 @@ class BabyRobot_v0( BabyRobotInterface ):
         return self.level.draw()  
 
 
-    def reset(self):
+    def reset(self, seed=None, return_info=False, options=None):
         ''' reset Baby Robot's position in the grid '''
+        if seed is not None:
+           random.seed(seed)           
         self.robot.set_cell_position(self.initial_pos)      
         self.robot.reset()               
         self.x = self.initial_pos[0]

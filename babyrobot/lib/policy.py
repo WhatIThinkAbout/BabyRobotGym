@@ -1,6 +1,7 @@
 # Copyright (c) Steve Roberts
 # Distributed under the terms of the Modified BSD License.
 
+import random
 import numpy as np
 from babyrobot.envs import BabyRobotInterface
 from babyrobot.envs.lib.direction import Direction
@@ -8,9 +9,13 @@ from babyrobot.envs.lib.actions import Actions
 
 class Policy():
 
-  def __init__(self, level: BabyRobotInterface):    
+  def __init__(self, level: BabyRobotInterface, directions: np.array = None):    
     self.level = level    
-    self.directions = np.zeros((level.height,level.width),dtype=int)
+    if directions is None:
+      # if no directions are supplied create a policy where all actions are equally likely
+      self.directions = np.full((level.height,level.width), Direction.All)
+    else:
+      self.directions = directions
     
   def set_policy(self,directions):
     ''' set the policy (i.e. the action to take in each state) '''
@@ -78,7 +83,7 @@ class Policy():
     return int(directions)
 
   
-  def get_directions(self,x,y):
+  def get_state_directions(self,x,y):
     ''' return the direction bitfield for the specified state 
       - this combines the directions allowed by the grid with those specified by the policy
     '''    
@@ -97,7 +102,7 @@ class Policy():
     ''' return a list of the allowed directions for the specified state 
       - this combines the directions allowed by the grid with those specified by the policy
     '''
-    return Direction.get_list( self.get_directions(x,y) )    
+    return Direction.get_list( self.get_state_directions(x,y) )    
 
 
   def get_actions(self,x,y):
@@ -105,10 +110,36 @@ class Policy():
       - this takes the actions specified by the policy and removes any that are invalid
       (i.e. any that aren't possible in the environment)
     '''     
-    direction_value = self.get_directions(x,y)
+    direction_value = self.get_state_directions(x,y)
     action_list = []
     if direction_value & Direction.North: action_list.append( Actions.North )
     if direction_value & Direction.South: action_list.append( Actions.South )
     if direction_value & Direction.East:  action_list.append( Actions.East ) 
     if direction_value & Direction.West:  action_list.append( Actions.West ) 
     return action_list 
+
+
+  def get_action(self,x,y):
+    ''' return a single action for the specified state
+        - if no action exists for this state then one will be chosen at random from the
+        available directions
+        - if more than one action exists then one will be chosen from these at random
+    '''
+    actions = self.get_actions(x,y)
+    if len(actions) == 0:
+      # choose a random action (stochastic policy with all actions possible)
+      return self.level.action_space.sample()
+    
+    # choose one of the policies possible actions
+    return np.random.choice(actions)
+
+
+  def get_action_probabilities(self,x,y):
+    ''' return a dictionary with the allowed actions for a state along with the 
+        probability of taking each of these actions
+    '''  
+    # get the allowed actions in the state
+    actions = self.get_actions(x,y)
+
+    equal_probability = 1 / len(actions)
+    return { action:equal_probability for action in actions }
