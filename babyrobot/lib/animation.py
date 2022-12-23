@@ -41,7 +41,7 @@ class Animate():
     self.create_images: False    
 
     # the default time between each step when creating images from the episode
-    self.kImageInterval = 3000
+    self.kImageInterval = 300
 
 
   def set_parameters(self, **kwargs):
