@@ -13,6 +13,7 @@ class PolicyEvaluation():
   iterations = 0
   policy = None
   discount_factor = 1.0  
+  threshold = 1e-3
 
   def __init__(self, env: BabyRobotInterface, policy: Policy, discount_factor=1.0):
     self.level = env

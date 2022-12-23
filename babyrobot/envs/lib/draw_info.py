@@ -346,11 +346,10 @@ class DrawInfo():
     
     # limit floating point values to the default precision
     if isinstance(value, float):
+      value = round(value,self.precision)
       if self.precision == 0:
         # convert to int if set to have no decimal places
-        value = value.astype(int)
-      else:
-        value = round(value,self.precision)        
+        value = value.astype(int)       
     
     canvas = self.canvas
     padding = self.draw_grid.padding

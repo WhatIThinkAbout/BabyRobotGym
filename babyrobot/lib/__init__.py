@@ -5,3 +5,4 @@ from .policy import Policy
 from .policy_evaluation import PolicyEvaluation
 from .value_iteration import ValueIteration
 from .utils import Utils
+from .animation import Animate

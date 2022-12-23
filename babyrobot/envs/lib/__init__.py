@@ -8,4 +8,5 @@ from .draw_grid import DrawGrid
 from .robot_position import RobotPosition
 from .robot_draw import RobotDraw
 
-
+import warnings
+warnings.filterwarnings('ignore')
