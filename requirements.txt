@@ -1,4 +1,4 @@
-babyrobot==1.0.12
+babyrobot==1.0.16
 gym==0.25.2
 imageio==2.19.0
 ipycanvas==0.11.0
