@@ -174,4 +174,3 @@ dependencies:
     - webencodings==0.5.1
     - websocket-client==0.58.0
     - widgetsnbextension==3.5.2
-prefix: /home/steve/anaconda3/envs/BabyRobotEnv
