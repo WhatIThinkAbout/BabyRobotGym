@@ -17,14 +17,20 @@ The code in this repository accompanies the Towards Data Science article _[<b>Cr
 pip install babyrobot
 ```
 
+# Animation Example
 
-### API Example
+An example notebook showing how animation and movie creation can be done in the Baby Robot Gym environment:
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/WhatIThinkAbout/BabyRobotGym/HEAD?labpath=notebooks%2FBabyRobot_Animation.ipynb)
+
+
+# API Example
 
 The example notebook, showing all of the API calls used to create a Baby Robot Gym environment can be opened here:
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/WhatIThinkAbout/BabyRobotGym/HEAD?labpath=notebooks%2FBabyRobot_API.ipynb)
 
-### Reinforcement Learning
+# Reinforcement Learning
 
 ## Part 1: [State Values and Policy Evaluation](https://towardsdatascience.com/state-values-and-policy-evaluation-ceefdd8c2369)
 
