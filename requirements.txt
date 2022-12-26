@@ -3,7 +3,7 @@ gym==0.25.2
 numpy>=1.21.6
 imageio==2.23.0
 ipycanvas==0.11.0
-ipykernel==6.19.4
+ipykernel>=6.16.2
 ipywidgets==8.0.4
 ipython_genutils==0.2.0
 ipywidgets==7.6.5
