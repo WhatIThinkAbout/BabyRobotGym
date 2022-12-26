@@ -4,9 +4,8 @@ numpy>=1.21.6
 imageio==2.23.0
 ipycanvas==0.11.0
 ipykernel>=6.16.2
-ipywidgets==8.0.4
 ipython_genutils==0.2.0
-ipywidgets==7.6.5
+ipywidgets==8.0.4
 jupyter-client==7.4.8
 jupyter-core==5.1.1
 jupyter-packaging==0.12.2
