@@ -1,4 +1,4 @@
-from gym.envs.registration import register
+from gymnasium.envs.registration import register
 from .lib.utils import make
 from ._version import __version__
 
