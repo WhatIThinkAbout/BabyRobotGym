@@ -1,17 +1,15 @@
 # Copyright (c) Steve Roberts
 # Distributed under the terms of the Modified BSD License.
 
-import gym
+import gymnasium
 
 from .lib.grid_level import GridLevel
 from .lib.robot_draw import RobotDraw
 from .lib.dynamic_space import Dynamic
-
 from .lib.direction import Direction
-from .lib.actions import Actions
 
 
-class BabyRobotInterface(gym.Env):
+class BabyRobotInterface(gymnasium.Env):
     ''' Baby Robot Gym Environment Base Class '''
 
     def __init__(self, **kwargs):

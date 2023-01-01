@@ -36,6 +36,7 @@ notebooks/.*
 notebooks/images/canvas_level/
 notebooks/images_hide/
 notebooks/themes/
+notebooks/animate_images/
 examples/images/
 
 # PyInstaller
@@ -141,3 +142,4 @@ dmypy.json
 notebooks/green_theme.png
 .vscode/launch.json
 requirements_full.txt
+requirements_full2.txt

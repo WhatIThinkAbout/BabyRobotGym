@@ -39,13 +39,13 @@ class Cell:
         """Add a wall between cells self and other."""
 
         self.walls[wall] = True
-        other.walls[Cell.wall_pairs[wall]] = True  
+        other.walls[Cell.wall_pairs[wall]] = True
 
     def toggle_wall(self, other, wall):
         if self.walls[wall]:
           self.knock_down_wall(other,wall)
         else:
-          self.add_wall(other,wall)    
+          self.add_wall(other,wall)
 
 
 class Maze:
@@ -59,7 +59,7 @@ class Maze:
 
         # set the seed for random if want to produce consistent maze
         if seed is not None: random.seed(seed)
-        
+
         self.nx, self.ny = nx, ny
         self.ix, self.iy = ix, iy
         self.maze_map = [[Cell(x, y, no_walls) for y in range(ny)] for x in range(nx)]
@@ -79,12 +79,12 @@ class Maze:
             if x == 0:
               self.cell_at(x, y).walls['W'] = True
             elif (x+1) == self.nx:
-              self.cell_at(x, y).walls['E'] = True              
+              self.cell_at(x, y).walls['E'] = True
 
     def cell_at(self, x, y):
         """Return the Cell object at (x,y)."""
         return self.maze_map[x][y]
-    
+
     def dimensions(self):
         return self.nx, self.ny
 
@@ -197,26 +197,26 @@ class Maze:
             cell_stack.append(current_cell)
             current_cell = next_cell
             nv += 1
-            
-    def write_to_canvas(self, canvas, maze_height, maze_padding, color='#000', wall_width=4 ): 
+
+    def write_to_canvas(self, canvas, maze_height, maze_padding, color='#000', wall_width=4 ):
         ' draw the maze onto the canvas '
 
         aspect_ratio = self.nx / self.ny
         # Pad the maze all around by this amount.
         padding = maze_padding
-        
+
         # Height and width of the maze image (excluding padding), in pixels
         height = maze_height
         width = int(height * aspect_ratio)
-        
+
         # Scaling factors mapping maze coordinates to image coordinates
         scy, scx = height / self.ny, width / self.nx
 
         canvas.line_width = wall_width
-        canvas.line_cap = 'square'    
-        
-        canvas.stroke_style = color       
-        canvas.set_line_dash([0,0])        
+        canvas.line_cap = 'square'
+
+        canvas.stroke_style = color
+        canvas.set_line_dash([0,0])
 
         def draw_wall( x1,y1,x2,y2 ):
             canvas.begin_path()
@@ -238,5 +238,5 @@ class Maze:
 
         # Draw the North and West maze border, which won't have been drawn
         # by the procedure above.
-        draw_wall(0, 0, 0, height)        
+        draw_wall(0, 0, 0, height)
         draw_wall(0, 0, width, 0)

@@ -1,5 +1,5 @@
-babyrobot==1.0.17
-gym==0.25.2
+babyrobot==1.0.18
+gymnasium==0.27.0
 numpy>=1.21.6
 imageio==2.23.0
 ipycanvas==0.11.0

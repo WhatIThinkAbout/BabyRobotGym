@@ -6,7 +6,7 @@ from ipywidgets import Layout
 from ipywidgets import Play, IntProgress, HBox, VBox, link
 import imageio
 import os
-import gym
+import gymnasium
 
 
 class Utils():
@@ -82,7 +82,7 @@ def make( id: str, new_step_api=True, **setup: dict ):
   '''
   setup['new_step_api'] = new_step_api
   setup['render_mode'] = 'human'
-  env = gym.make(id, **setup)  
+  env = gymnasium.make(id, **setup)  
   env._disable_render_order_enforcing=True  
   return env    
 
