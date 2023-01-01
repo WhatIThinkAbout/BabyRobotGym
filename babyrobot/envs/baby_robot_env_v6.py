@@ -44,6 +44,7 @@ class BabyRobotEnv_v6( BabyRobotEnv_v5 ):
            
       # set the 'done' flag if we've reached the exit
       done = (self.x == self.end[0]) and (self.y == self.end[1])
+      truncated = False
         
       info = {'target_reached':target_reached}
-      return obs, reward, done, info            
+      return obs, reward, done, truncated, info            

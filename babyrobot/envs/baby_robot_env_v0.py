@@ -1,7 +1,7 @@
-import gym
+import gymnasium
 
 
-class BabyRobotEnv_v0(gym.Env):
+class BabyRobotEnv_v0(gymnasium.Env):
     
     def __init__(self):
         super().__init__()
@@ -11,8 +11,9 @@ class BabyRobotEnv_v0(gym.Env):
         state = 1    
         reward = -1            
         done = True
+        truncated = False
         info = {}
-        return state, reward, done, info
+        return state, reward, done, truncated, info
 
     def reset(self):
         state = 0
