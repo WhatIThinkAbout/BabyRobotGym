@@ -10,14 +10,16 @@ class BabyRobotEnv_v0(gymnasium.Env):
     def step(self, action):        
         state = 1    
         reward = -1            
-        done = True
+        terminated = True
         truncated = False
         info = {}
-        return state, reward, done, truncated, info
+        return state, reward, terminated, truncated, info
 
-    def reset(self):
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
         state = 0
-        return state
+        info = {}
+        return state,info
   
-    def render(self,mode):
+    def render(self):
         pass

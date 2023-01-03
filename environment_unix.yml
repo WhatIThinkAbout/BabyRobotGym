@@ -84,7 +84,8 @@ dependencies:
   - zeromq=4.3.4
   - zlib=1.2.12
   - pip:
-    - argon2-cffi-bindings==21.2.0    
+    - argon2-cffi-bindings==21.2.0
+    - babyrobot==1.0.20
     - beautifulsoup4==4.11.1
     - certifi==2021.5.30
     - cffi==1.15.0
@@ -93,7 +94,8 @@ dependencies:
     - debugpy==1.5.1
     - entrypoints==0.4
     - fonttools==4.33.3
-    - gym==0.25.2
+    - gymnasium==0.27.0
+    - imageio==2.23.0
     - ipycanvas==0.11
     - ipykernel==6.9.1
     - ipython==8.2.0

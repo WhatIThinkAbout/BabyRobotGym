@@ -47,20 +47,17 @@ class BabyRobotEnv_v2( BabyRobotEnv_v1 ):
       self.take_action(action)
       obs = np.array([self.x,self.y])
 
-      # set the 'done' flag if we've reached the exit
-      done = (self.x == self.end[0]) and (self.y == self.end[1])
+      # set the 'terminated' flag if we've reached the exit
+      terminated = (self.x == self.end[0]) and (self.y == self.end[1])
       truncated = False
 
       # get -1 reward for each step
       # - except at the terminal state which has zero reward
-      reward = 0 if done else -1
+      reward = 0 if terminated else -1
 
       info = {}
-      return obs, reward, done, truncated, info
+      return obs, reward, terminated, truncated, info
 
 
-  def render(self, mode='human', action=0, reward=0 ):
-      if mode == 'human':
-        print(f"{Actions(action): <5}: ({self.x},{self.y}) reward = {reward}")
-      else:
-        super().render(mode=mode) # just raise an exception
+  def render(self, action=0, reward=0 ):
+      print(f"{Actions(action): <5}: ({self.x},{self.y}) reward = {reward}")

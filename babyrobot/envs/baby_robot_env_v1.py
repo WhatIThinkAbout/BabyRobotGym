@@ -1,3 +1,4 @@
+import numpy as np
 import gymnasium
 from gymnasium.spaces import Discrete, MultiDiscrete
 
@@ -26,19 +27,20 @@ class BabyRobotEnv_v1(gymnasium.Env):
         self.y = 0
 
     def step(self, action):
-        obs = [self.x,self.y]
+        obs = np.array([self.x,self.y])
         reward = -1
-        done = True
+        terminated = True
         truncated = False
         info = {}
-        return obs, reward, done, truncated, info
+        return obs, reward, terminated, truncated, info      
 
     def reset(self, seed=None, return_info=False, options=None):
         super().reset(seed=seed)
         # reset Baby Robot's position in the grid
         self.x = 0
         self.y = 0
-        return [self.x,self.y],{}
+        info = {}
+        return np.array([self.x,self.y]),info
 
-    def render(self, mode='human', info=None ):
+    def render(self, info=None ):
         pass
