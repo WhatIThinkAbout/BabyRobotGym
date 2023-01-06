@@ -27,9 +27,10 @@ class BabyRobotEnv_v3( BabyRobotEnv_v2 ):
       self.robot.reset()
       self.x = self.initial_pos[0]
       self.y = self.initial_pos[1]
-      return [self.x,self.y],{}
+      info = {}
+      return np.array([self.x,self.y]),info
 
-  def render(self, mode='human', action=0, reward=0 ):
+  def render(self, action=0, reward=0 ):
       ''' render as an HTML5 canvas '''
       print(f"{Actions(action): <5}: ({self.x},{self.y}) reward = {reward}")
 

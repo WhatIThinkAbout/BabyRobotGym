@@ -42,9 +42,9 @@ class BabyRobotEnv_v6( BabyRobotEnv_v5 ):
       reward, target_reached = self.take_action(action)      
       obs = np.array([self.x,self.y])      
            
-      # set the 'done' flag if we've reached the exit
-      done = (self.x == self.end[0]) and (self.y == self.end[1])
+      # set the 'terminated' flag if we've reached the exit
+      terminated = (self.x == self.end[0]) and (self.y == self.end[1])
       truncated = False
         
       info = {'target_reached':target_reached}
-      return obs, reward, done, truncated, info            
+      return obs, reward, terminated, truncated, info            
