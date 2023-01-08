@@ -38,15 +38,15 @@ class Animate():
     self.kPlayInterval = 80
 
     # if set true an image will be written for each step of the animation
-    self.create_images: False    
+    self.create_images: False
 
     # the default time between each step when creating images from the episode
     self.kImageInterval = 300
 
 
   def set_parameters(self, **kwargs):
-    ''' 
-        set all the parameters using any supplied values, 
+    '''
+        set all the parameters using any supplied values,
         otherwise use the defaults
     '''
     # the maximum number of steps for which the episode should run
@@ -56,7 +56,10 @@ class Animate():
     self.save_interval = kwargs.get('save_interval',1)
 
     # the precision to display the state values
-    self.precision = kwargs.get('precision',1)    
+    self.precision = kwargs.get('precision',1)
+
+    # test if directions should be displayed
+    self.show_directions = kwargs.get('show_directions',True)    
 
     # test if an image should be written at each step
     self.create_images = kwargs.get('create_images',False)
@@ -67,12 +70,12 @@ class Animate():
     self.play_interval = kwargs.get('interval',self.kPlayInterval)
     if self.create_images and self.play_interval < self.kImageInterval:
       # when images are being written need to go more slowly
-      self.play_interval = self.kImageInterval      
+      self.play_interval = self.kImageInterval
 
-  
+
   def get_info_string( self, details ):
-    ''' 
-        basic function to display text information 
+    '''
+        basic function to display text information
     '''
     info = {}
     info['side_info'] = \
@@ -89,8 +92,8 @@ class Animate():
 
 
   def write_file(self):
-    ''' 
-        write the current environment to a file and wait for it to be created 
+    '''
+        write the current environment to a file and wait for it to be created
     '''
     filename = f'{self.image_folder}/step_{self.partial_step}.png'
 
@@ -114,10 +117,10 @@ class Animate():
         Helper method to delete any images in the image folder
     '''
     Utils.clear_directory(self.image_folder)
-    
+
 
   def create_movie( self, **kwargs ):
-    ''' 
+    '''
         create a gif movie from the images in the specified directory
         where:
           duration = time between each frame
@@ -141,7 +144,7 @@ class Animate():
     # remove the images when the movie has been made
     if kwargs.get('clear_images',True):
       self.clear_image_folder()
-      
+
 
   def show(self, on_update, **kwargs):
     '''
@@ -160,8 +163,8 @@ class Animate():
         self.canvases[3].save()
         self.canvases[3].restore()
         self.canvases.to_file(f'{self.image_folder}/step_{self.partial_step}.png')
-    
-    if self.create_images:      
+
+    if self.create_images:
       Utils.create_image_directory(self.image_folder)
       self.canvases.observe(save_to_file,'image_data')
 
@@ -171,8 +174,8 @@ class Animate():
 
 
   def show_policy(self, policy: Policy, **kwargs):
-    ''' 
-        animate the steps of the supplied policy 
+    '''
+        animate the steps of the supplied policy
     '''
     # store the supplied policy
     self.policy = policy
@@ -181,10 +184,10 @@ class Animate():
     self.kPlayInterval = 80
 
     # the default time between each step when creating images from the episode
-    self.kImageInterval = 300      
+    self.kImageInterval = 300
 
     # setup any supplied parameter values
-    self.set_parameters(**kwargs)          
+    self.set_parameters(**kwargs)
 
     # the time between each frame if a movie is created
     self.duration = 0.08
@@ -240,7 +243,7 @@ class Animate():
                 'truncated': truncated,
                 'info': info,
                 'step': self.step
-              }              
+              }
               self.env.show_info(info_function(details))
 
             # if the state hasn't changed set the last action to be 'stay'
@@ -268,29 +271,29 @@ class Animate():
         self.partial_step = 0
         self.done = False
 
-    return self.show(on_update,**kwargs)   
+    return self.show(on_update,**kwargs)
 
 
   def show_policy_evaluation(self, policy_evaluation: PolicyEvaluation, **kwargs):
-    ''' 
-        animate the iterations of policy evaluation 
+    '''
+        animate the iterations of policy evaluation
     '''
     # store the supplied policy evaluation object
     self.policy_evaluation = policy_evaluation
 
     # the default time between each step when just displaying the episode
-    self.kPlayInterval = 80
+    self.kPlayInterval = 500
 
     # the default time between each step when creating images from the episode
-    self.kImageInterval = 3000     
+    self.kImageInterval = 3000
 
     # setup any supplied parameter values
-    self.set_parameters(**kwargs)   
-        
-    # the time between each frame if a movie is created
-    self.duration = 1.0    
+    self.set_parameters(**kwargs)
 
-    # each step is a single step_interval    
+    # the time between each frame if a movie is created
+    self.duration = 1.0
+
+    # each step is a single step_interval
     self.max_partial_step = self.max_steps
 
     # flag to indicate if policy evaluation has converged
@@ -326,20 +329,22 @@ class Animate():
         if delta < self.policy_evaluation.threshold:
           self.convergence = True
 
-        # get and display the state values and directions
-        directions = self.policy_evaluation.policy.calculate_greedy_directions(self.policy_evaluation.end_values)
+        # get and display the state values and directions        
+        directions = self.policy_evaluation.policy.calculate_greedy_directions(self.policy_evaluation.end_values) if self.show_directions else None
         self.env.show_info(get_info_string(self.partial_step, self.policy_evaluation.end_values, directions))
-        sleep(2)
+        
+        # add an extra delay between each step if images are being generated
+        if self.create_images: sleep(2)
         self.env.render()
 
         if ((self.partial_step == self.max_partial_step) or self.convergence):
           self.done = True
 
           # reduce the max steps in case convergence has finished early
-          self.max_partial_step = self.partial_step            
+          self.max_partial_step = self.partial_step
 
     # add the initial state values to the grid at partial_step = 0
-    directions = self.policy_evaluation.policy.calculate_greedy_directions(self.policy_evaluation.end_values)
+    directions = self.policy_evaluation.policy.calculate_greedy_directions(self.policy_evaluation.end_values) if self.show_directions else None
     self.env.show_info(get_info_string(self.partial_step, self.policy_evaluation.end_values, directions))
     self.env.render()
 
