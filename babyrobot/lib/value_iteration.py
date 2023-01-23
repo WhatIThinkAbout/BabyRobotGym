@@ -5,8 +5,8 @@
 import numpy as np
 from numpy import inf
 
-from babyrobot.envs import BabyRobotInterface
-from babyrobot.envs.lib.direction import Direction
+from ..envs import BabyRobotInterface
+from ..envs.lib.direction import Direction
 
 
 class ValueIteration():

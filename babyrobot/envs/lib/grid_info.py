@@ -2,11 +2,7 @@
 import numpy as np
 from typing import Union
 
-
-from ipycanvas import hold_canvas
-from .arrows import Arrows
 from .direction import Direction
-
 from .grid_base import GridBase
 
 

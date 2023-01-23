@@ -1,7 +1,7 @@
 from argparse import Action
 import gymnasium
 import numpy as np
-from babyrobot.envs.lib.actions import Actions
+from .actions import Actions
 
 class Dynamic(gymnasium.Space):
 

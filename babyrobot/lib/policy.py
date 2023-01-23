@@ -3,9 +3,9 @@
 
 import math
 import numpy as np
-from babyrobot.envs import BabyRobotInterface
-from babyrobot.envs.lib.direction import Direction
-from babyrobot.envs.lib.actions import Actions
+from ..envs import BabyRobotInterface
+from ..envs.lib.direction import Direction
+from ..envs.lib.actions import Actions
 
 class Policy():
 
@@ -144,5 +144,8 @@ class Policy():
     # get the allowed actions in the state
     actions = self.get_actions(x,y)
 
-    equal_probability = 1 / len(actions)
-    return { action:equal_probability for action in actions }
+    if len(actions) == 0:      
+      return {}
+    else:
+      equal_probability = 1 / len(actions)
+      return { action:equal_probability for action in actions }

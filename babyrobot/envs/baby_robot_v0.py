@@ -17,7 +17,9 @@ class BabyRobot_v0( BabyRobotInterface ):
         super().__init__(**kwargs)
 
         # test if the 'step' function should use the new, 2 boolean, return format
-        self.new_step_api = kwargs.get('new_step_api',True)
+        self.apply_api_compatibility = kwargs.get('apply_api_compatibility',False)
+
+        self.max_episode_steps = kwargs.get('max_steps', None)
 
         # by default use a dynamic action space
         if kwargs.get('action_space','dynamic') == 'dynamic':
@@ -54,19 +56,24 @@ class BabyRobot_v0( BabyRobotInterface ):
         reward, target_reached = self.take_action(action)
         obs = np.array([self.x,self.y])
 
-        # set the 'terminated' flag if we've reached the exit
+        # increment the number of steps taken since the last reset
+        # - if this is greater than the maximum allowed for the episode set the 'truncated' flag
+        self.steps += 1
+        truncated = False if self.max_episode_steps is None else (self.steps > self.max_episode_steps)
+
+        # set the 'terminated' flag if we've reached the exit or the episode is truncated
         # (previously this was called 'done')
         terminated = (self.x == self.end[0]) and (self.y == self.end[1])
-        truncated = False
+        if truncated: terminated = True
 
         info = {'target_reached':target_reached}
 
-        if self.new_step_api:
-          # new style return format - uses 2 booleans
-          return obs, reward, terminated, truncated, info
-        else:
+        if self.apply_api_compatibility:
           # old style return format - uses a single boolean to indicate episode termination
           return obs, reward, terminated, info
+        else:
+          # new style return format - uses 2 booleans
+          return obs, reward, terminated, truncated, info
 
 
     def render(self, mode='human', info=None ):
@@ -74,21 +81,26 @@ class BabyRobot_v0( BabyRobotInterface ):
         # move baby robot to the current position
         self.robot.move(self.x,self.y)
 
-        # write the info to the grid side-panel
-        self.level.show_info(info)
-        return self.level.draw()
+        if self.render_mode is not None:
+          # write the info to the grid side-panel
+          self.level.show_info(info)
+          return self.level.draw()
 
 
     def reset(self, seed=None, return_info=False, options=None):
         ''' reset Baby Robot's position in the grid '''
         super().reset(seed=seed)
-        if seed is not None:           
+        if seed is not None:
            random.seed(seed)
 
+        # the number of steps taken since the last reset
+        self.steps = 0
+
         self.robot.set_cell_position(self.initial_pos)
-        self.robot.reset()
+        if self.render_mode is not None:
+          self.robot.reset()
         self.x = self.initial_pos[0]
         self.y = self.initial_pos[1]
         self.set_available_actions()
-        return [self.x,self.y],{}
-
+        info = {}
+        return np.array([self.x,self.y]),info

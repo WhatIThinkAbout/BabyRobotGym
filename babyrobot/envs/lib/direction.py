@@ -1,7 +1,7 @@
 from enum import IntFlag
 from typing import List,Union
 
-from babyrobot.envs.lib.actions import Actions
+from .actions import Actions
 
 ''' simple helper class to enumerate directions in the grid levels '''
 class Direction(IntFlag):

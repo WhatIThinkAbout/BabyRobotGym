@@ -5,12 +5,12 @@ import os
 import numpy as np
 import imageio.v2 as imageio
 
-from babyrobot.envs import BabyRobotInterface
-from babyrobot.envs.lib import Actions
-from babyrobot.envs.lib import Direction
-from babyrobot.lib import Utils
-from babyrobot.lib import PolicyEvaluation
-from babyrobot.lib import Policy
+from ..envs import BabyRobotInterface
+from ..envs.lib import Actions
+from ..envs.lib import Direction
+from . import Utils
+from . import PolicyEvaluation
+from . import Policy
 
 from ipywidgets import HBox, VBox
 

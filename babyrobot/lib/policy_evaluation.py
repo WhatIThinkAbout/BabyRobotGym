@@ -2,9 +2,9 @@
 # Distributed under the terms of the Modified BSD License.
 
 import numpy as np
-from babyrobot.envs import BabyRobotInterface
-from babyrobot.envs.lib.direction import Direction
-from babyrobot.lib import Policy
+from ..envs import BabyRobotInterface
+from ..envs.lib.direction import Direction
+from . import Policy
 
 
 ''' evaluate a policy '''
@@ -16,7 +16,7 @@ class PolicyEvaluation():
   threshold = 1e-3
 
   def __init__(self, env: BabyRobotInterface, policy: Policy, discount_factor=1.0):
-    self.level = env
+    self.env = env
 
     # check that a policy has been given to evaluate
     assert policy is not None, "A Policy must be supplied to PolicyEvaluation." 
@@ -33,18 +33,18 @@ class PolicyEvaluation():
 
 
   def reset_start_values(self):
-    self.start_values = np.zeros((self.level.height,self.level.width))    
+    self.start_values = np.zeros((self.env.height,self.env.width))    
 
 
   def reset_end_values(self):
-    self.end_values = np.zeros((self.level.height,self.level.width))  
+    self.end_values = np.zeros((self.env.height,self.env.width))  
 
 
   def get_state_value(self,pos):
     ''' get the currently calculated value of the specified position in the grid '''
     x = pos[0]
     y = pos[1]
-    if (x < 0 or x >= self.level.width) or (y < 0 or y >= self.level.height): 
+    if (x < 0 or x >= self.env.width) or (y < 0 or y >= self.env.height): 
       return 0
     return self.start_values[y,x]
 
@@ -52,7 +52,7 @@ class PolicyEvaluation():
   def calculate_action_value(self,x,y,chosen_action,all_actions):
 
     # get the probability of moving to the intended target from this state
-    transition_probability = self.level.get_transition_probability( x, y )    
+    transition_probability = self.env.get_transition_probability( x, y )    
 
     # the number of other states where baby robot can end up if he doesnt reach the target state
     num_alternative_states = len(all_actions) - 1 
@@ -68,7 +68,7 @@ class PolicyEvaluation():
         probability = (1-transition_probability)/num_alternative_states
 
       # get the reward for moving from the current cell in this direction
-      reward, next_pos = self.level.get_reward( x, y, Direction.from_action(action) )
+      reward, next_pos = self.env.get_reward( x, y, Direction.from_action(action) )
 
       # combine the reward with discounted value of the next state and 
       # sum over each of the transition probabilities p(s'|s,a)
@@ -81,7 +81,7 @@ class PolicyEvaluation():
     ''' calculate the state value when all actions are equally possible '''
 
     # get the list of all possible actions in this state
-    all_actions = self.level.get_available_actions(x,y)
+    all_actions = self.env.get_available_actions(x,y)
 
     # when an action is taken it will either end in target state or one of the other possible states
     # - count the number of states other than the target state
@@ -133,16 +133,17 @@ class PolicyEvaluation():
   def standard_sweep(self):
     ''' calculate the state value for all states '''                
     # calculate the value of all states except the exit
-    end = self.level.end
-    for y in range(self.level.height):
-      for x in range(self.level.width):
-        if (x != end[0]) or (y != end[1]):          
-          if self.policy is None:
-            # use stochastic policy
-            self.end_values[y,x] = self.calculate_cell_value(x,y)   
-          else:
-            # calculate value under deterministic policy
-            self.end_values[y,x] = self.calculate_policy_cell_value(x,y)  
+    end = self.env.end
+    for y in range(self.env.height):
+      for x in range(self.env.width):
+        if self.env.level.grid_base.test_for_base_area(x,y) == False:
+          if (x != end[0]) or (y != end[1]):          
+            if self.policy is None:
+              # use stochastic policy
+              self.end_values[y,x] = self.calculate_cell_value(x,y)   
+            else:
+              # calculate value under deterministic policy
+              self.end_values[y,x] = self.calculate_policy_cell_value(x,y)  
 
 
   def do_iteration(self):        

@@ -1,6 +1,8 @@
 # Copyright (c) Steve Roberts
 # Distributed under the terms of the Modified BSD License.
 
+import os
+os.environ["JUPYTER_PLATFORM_DIRS"] = "1"
 
 #
 # Release Gym Environments

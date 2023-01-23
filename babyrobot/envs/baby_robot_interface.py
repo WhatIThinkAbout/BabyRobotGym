@@ -4,6 +4,8 @@
 import gymnasium
 
 from .lib.grid_level import GridLevel
+from .lib.graphical_grid_level import GraphicalGridLevel
+from .lib.robot import Robot
 from .lib.robot_draw import RobotDraw
 from .lib.dynamic_space import Dynamic
 from .lib.direction import Direction
@@ -14,6 +16,9 @@ class BabyRobotInterface(gymnasium.Env):
 
     def __init__(self, **kwargs):
         super().__init__()
+
+        # get the rendering mode
+        self.render_mode = kwargs.get('render_mode',None)
 
         # initially no actions are available      
         self.dynamic_action_space = Dynamic()          
@@ -38,13 +43,16 @@ class BabyRobotInterface(gymnasium.Env):
         # Baby Robot's position in the grid
         self.x = self.initial_pos[0]
         self.y = self.initial_pos[1]         
-
-        # graphical creation of the level
-        self.level = GridLevel( **kwargs )  
         
-        # add baby robot
-        self.robot = RobotDraw(self.level,**kwargs)   
-        self.robot.draw()          
+        # creation of the level
+        if self.render_mode is None:        
+          self.level = GridLevel( **kwargs )           
+          self.robot = Robot(self.level,**kwargs)   
+        else:
+          # graphical creation of the level
+          self.level = GraphicalGridLevel( **kwargs )           
+          self.robot = RobotDraw(self.level,**kwargs)   
+          self.robot.draw()                   
 
         # set the initial position and available actions
         self.reset()
@@ -124,12 +132,15 @@ class BabyRobotInterface(gymnasium.Env):
 
     def show_info(self,info):
         ''' display the supplied information on the grid level '''
-        self.level.show_info( info )
+        if self.render_mode is not None:
+          self.level.show_info( info )
 
     def clear_info(self,all_info=False):
         ''' clear any current information of the grid level '''
-        self.level.clear(all_info)
-
+        if self.render_mode is not None:
+          self.level.clear(all_info)
+        
     def save(self, filename):
         ''' save the level as an image to the specified file '''
-        self.level.save(filename)                   
+        if self.render_mode is not None:
+          self.level.save(filename)                           

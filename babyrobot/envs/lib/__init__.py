@@ -4,6 +4,7 @@ from .arrows import Arrows
 
 from .grid_base import GridBase
 from .grid_level import GridLevel
+from .graphical_grid_level import GraphicalGridLevel
 from .draw_grid import DrawGrid
 from .robot_position import RobotPosition
 from .robot_draw import RobotDraw

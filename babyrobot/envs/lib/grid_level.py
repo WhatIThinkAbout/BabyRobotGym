@@ -5,9 +5,6 @@ from typing import Union
 from .direction import Direction
 from .grid_base import GridBase
 from .grid_info import GridInfo
-from .draw_grid import DrawGrid
-from .draw_info import DrawInfo
-
 
 
 class GridLevel():
@@ -24,10 +21,7 @@ class GridLevel():
 
     self.grid_base = GridBase( dir_path, **kwargs )
     self.grid_info = GridInfo( self.grid_base, **kwargs )
-    self.draw_grid = DrawGrid( self.grid_base, **kwargs )
-    self.draw_info = DrawInfo( self.draw_grid, self.grid_info, **kwargs )
-
-
+ 
   '''
       Query Functions
   '''

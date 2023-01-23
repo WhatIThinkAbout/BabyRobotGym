@@ -1,3 +1,4 @@
+from .robot import Robot
 from .direction import Direction
 
 
@@ -6,23 +7,11 @@ logging.basicConfig(level=logging.DEBUG, format='(%(threadName)-9s) %(message)s'
 
 
 ''' control robot positioning and drawing '''
-class RobotPosition():
-
-    move_count = 0
-    maze = None
-
+class RobotPosition( Robot ):
 
     def __init__( self, level, **kwargs ):
-
-      self.level = level.grid_base
       self.grid  = level.draw_grid
-
-      if hasattr(level, 'maze'):
-        self.maze = level.maze
-
-      # the position in grid cells
-      self.x_cell = 0
-      self.y_cell = 0
+      super().__init__( level, **kwargs )
 
       # the position in pixels
       self.x = 0
@@ -38,10 +27,6 @@ class RobotPosition():
           x,y = self.maze.dimensions()
           self.x_size = x * self.robot_size
           self.y_size = y * self.robot_size
-
-      # baby robot's initial position
-      self.initial_position = kwargs.get('initial_pos',self.level.start)
-      self.set_cell_position(self.initial_position)
 
 
     def get_cell_position(self):
@@ -80,24 +65,6 @@ class RobotPosition():
         while (self.y_cell > 0) and (self.y_cell > new_y):
           self.move_direction(Direction.North)
           self.y_cell -= 1
-
-
-    def test_for_valid_move( self, direction ):
-        ''' test if a move can actually be made in the specified direction '''
-
-        if direction == Direction.Stay:
-          return False
-
-        cell = None
-        if self.maze is not None:
-            x, y = self.get_cell_position()
-            cell = self.maze.cell_at( x, y )
-            if direction == Direction.North and cell.walls['N']: return False
-            if direction == Direction.South and cell.walls['S']: return False
-            if direction == Direction.East and cell.walls['E']: return False
-            if direction == Direction.West and cell.walls['W']: return False
-
-        return True
 
 
     def move_East(self):

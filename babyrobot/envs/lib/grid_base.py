@@ -170,7 +170,11 @@ class GridBase():
         ax,ay,aw,ah = self.get_area_defn(area)
       else:
         ax,ay,aw,ah = self.get_area_defn(area[0])
-      return self.in_area(x,y,ax,ay,aw,ah)
+      
+      if self.in_area(x,y,ax,ay,aw,ah):
+        return True
+        
+    return False
 
 
   def get_reward_value( self, x, y ):
@@ -183,9 +187,6 @@ class GridBase():
 
         Actions taken in the terminal state have a reward of zero (although once the terminal
         state is reached the episode terminates, so no actions will occur)
-        - however, moving to the terminal state still requires some energy to be used, so
-        the reward for taking an action that ends up in the terminal state is also given a
-        reward of -1.
 
         This represents the amount of time required to move through the puddle (and therefore
         the amount of energy used by BabyRobot)
@@ -202,6 +203,10 @@ class GridBase():
 
     # no rewards exist off the grid
     if self.test_for_base_area(x,y):
+      return 0
+
+    # by definition the terminal state has a zero reward
+    if (x == self.end[0]) and (y == self.end[1]):
       return 0
 
     # if any grid areas exist these can set different rewards

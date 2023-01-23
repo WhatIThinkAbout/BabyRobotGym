@@ -103,3 +103,16 @@ To start this in a browser, just type:
 (When running in jupyter notebook the current Conda environment will automatically be used and the required packages should all be available. It's also possible to run "<i>python -m ipykernel install --user --name=BabyRobotGym</i>" which will create a Jupyter Notebook kernel, that can then be selected from the notebook's menu.)
 
 Or else just open this file in VS Code and make sure _'BabyRobotGym'_ is selected as the kernel. This should make the _'BabyRobotEnv-v1'_ environment, test it in Stable Baselines and then run the environment until it completes, which happens to occur in a single step, since we haven't yet written the 'step' function!
+
+
+<br><br>
+# Notes:
+
+If, while running in a terminal (as opposed to a Jupyter Notebook) you get the warning "DeprecationWarning: Jupyter is migrating its paths to use standard platformdirs", in a terminal run:
+
+`export JUPYTER_PLATFORM_DIRS=1`
+
+followed by:
+
+`jupyter --paths`
+
