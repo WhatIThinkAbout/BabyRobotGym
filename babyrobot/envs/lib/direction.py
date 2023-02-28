@@ -15,6 +15,16 @@ class Direction(IntFlag):
     # get the enum name without the class
     def __str__(self): return self.name
 
+    def get_direction(current_state,next_state):
+      ''' find the direction you have to travel to get from the current state to the next state '''    
+      result = (next_state - current_state)
+      if result[0]==0 and result[1]==0: return Direction.Stay
+      if result[0]==-1: return Direction.West
+      if result[0]==1:  return Direction.East
+      if result[1]==-1: return Direction.North
+      if result[1]==1:  return Direction.South
+      raise Exception(f"direction could not be calculated: {current_state}->{next_state}")
+
 
     def get_value( direction_list: List[int] ) -> int:
       ''' convert a list of directions into a single bitfield value '''
@@ -77,13 +87,25 @@ class Direction(IntFlag):
       return action_list
 
 
-    def get_direction_char( direction: int ):
+    def get_direction_char( direction ):
       ''' convert the direction value into a character '''
       if direction == Direction.North: return "N"
       if direction == Direction.South: return "S"
       if direction == Direction.East:  return "E"
       if direction == Direction.West:  return "W"
-      return ""
+
+      # if this is already a direction character it will just drop through
+      return direction
+
+    def get_opposite( direction ):
+      if direction == Direction.North: return Direction.South
+      if direction == Direction.South: return Direction.North
+      if direction == Direction.East:  return Direction.West
+      if direction == Direction.West:  return Direction.East
+      if direction == 'N': return 'S'
+      if direction == 'S': return 'N'
+      if direction == 'E': return 'W'
+      if direction == 'W': return 'E'
 
 
     def from_action( action_value: Actions):

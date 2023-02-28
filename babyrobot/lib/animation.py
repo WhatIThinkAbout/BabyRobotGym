@@ -83,10 +83,11 @@ class Animate():
       ((10,10),f"step: {details['step']}"),
       ((10,30),f"state: {details['state']}"),
       ((10,50),f"action: {details['action']}"),
-      ((10,70),f"new state: {details['new_state']}"),
-      ((10,90),f"reward: {details['reward']}"),
-      ((10,110),f"done: {details['done']}"),
-      ((10,150),f"total reward: {details['total_reward']}"),
+      ((10,70),f"new state: {details['new_state']}"),      
+      ((10,90),f"direction: {details['direction']}"),
+      ((10,110),f"reward: {details['reward']}"),
+      ((10,130),f"done: {details['done']}"),
+      ((10,170),f"total reward: {details['total_reward']}"),
     ]
     return info
 
@@ -207,6 +208,9 @@ class Animate():
     self.last_action = self.policy.get_action(self.env.x,self.env.y)
     self.last_state = np.array([0,0])
 
+    self.current_state = [self.env.x,self.env.y]
+    self.new_state = [self.env.x,self.env.y]
+
     def on_update(*args):
 
       if self.partial_step < self.max_partial_step:
@@ -214,43 +218,41 @@ class Animate():
         if (self.partial_step % step_interval) == 0:
 
           self.step += 1
-
+          
           # keep going until the exit is reached
-          if not self.done:
+          if not self.done:            
 
-            current_state = [self.env.x,self.env.y]
+            self.current_state = [self.env.x,self.env.y]
 
             # get an action from the environment
-            # - sample again if the 'stay' action is returned
-            while True:
-              action = self.policy.get_action(self.env.x,self.env.y)
-              if action is not Actions.Stay:
-                break
+            action = self.policy.get_action(self.env.x,self.env.y)
+
 
             # take the action and get the properties of the next state
-            new_state, reward, self.done, truncated, info = self.env.step(action)
+            self.new_state, reward, self.done, truncated, info = self.env.step(action)
             self.total_reward += reward
 
             if info_function is not None:
               details = \
               {
-                'state': current_state,
+                'state': self.current_state,
                 'action': Direction.from_action(action),
                 'reward': reward,
-                'new_state': new_state,
+                'new_state': self.new_state,
                 'total_reward': self.total_reward,
                 'done': self.done,
                 'truncated': truncated,
                 'info': info,
-                'step': self.step
+                'step': self.step,
+                'direction': Direction.get_string(Direction.get_direction(self.current_state,self.new_state))
               }
               self.env.show_info(info_function(details))
 
             # if the state hasn't changed set the last action to be 'stay'
             self.last_action = action
-            if np.array_equal(new_state,self.last_state):
+            if np.array_equal(self.new_state,self.last_state):
               self.last_action = Actions.Stay
-            self.last_state = new_state
+            self.last_state = self.new_state
 
           else:
             # set the last action to 'stay' to signify the exit being reached
@@ -259,8 +261,9 @@ class Animate():
         # test if an action that caused a move occurred
         if Actions(self.last_action) is not Actions.Stay:
 
-          # 'partial_move' moves part of the way to the next state
-          direction = Direction.from_action(self.last_action)
+          direction = Direction.get_direction(self.current_state,self.new_state)          
+
+          # 'partial_move' moves part of the way to the next state          
           self.env.robot.partial_move(direction)
 
         self.partial_step += 1

@@ -51,33 +51,18 @@ class PolicyEvaluation():
 
   def calculate_action_value(self,x,y,chosen_action,all_actions):
 
-    # get the probability of moving to the intended target from this state
-    transition_probability = self.env.get_transition_probability( x, y )    
+    # get the possible probabilities, next_states and rewards for this action
+    action_probabilities = self.env.get_action_probabilities( x, y, chosen_action )
 
-    # the number of other states where baby robot can end up if he doesnt reach the target state
-    num_alternative_states = len(all_actions) - 1 
-
-    # sum the values of the possible next states
     action_value = 0
-    for action in all_actions:
-      if action == chosen_action:
-        # the chosen action is taken with the cell's transition probability
-        probability = transition_probability
-      else:
-        # the probability of ending up in another state is divided by the total number of other possible states
-        probability = (1-transition_probability)/num_alternative_states
-
-      # get the reward for moving from the current cell in this direction
-      reward, next_pos = self.env.get_reward( x, y, Direction.from_action(action) )
-
-      # combine the reward with discounted value of the next state and 
-      # sum over each of the transition probabilities p(s'|s,a)
-      action_value += probability * (reward + (self.discount_factor * self.get_state_value( next_pos )))
+    for probability,next_pos,reward in action_probabilities:      
+      # convert the x,y position into row,col      
+      action_value += probability * (reward + (self.discount_factor * self.get_state_value( next_pos )))   
 
     return action_value 
 
 
-  def calculate_cell_value(self,x,y):
+  def calculate_state_value(self,x,y):
     ''' calculate the state value when all actions are equally possible '''
 
     # get the list of all possible actions in this state
@@ -103,7 +88,7 @@ class PolicyEvaluation():
     return 0
 
 
-  def calculate_policy_cell_value(self,x,y):
+  def calculate_policy_state_value(self,x,y):
     ''' calculate the state value for a policy '''             
 
     # get the dictionary of possible actions and their probabilities in this state   
@@ -140,10 +125,10 @@ class PolicyEvaluation():
           if (x != end[0]) or (y != end[1]):          
             if self.policy is None:
               # use stochastic policy
-              self.end_values[y,x] = self.calculate_cell_value(x,y)   
+              self.end_values[y,x] = self.calculate_state_value(x,y)   
             else:
               # calculate value under deterministic policy
-              self.end_values[y,x] = self.calculate_policy_cell_value(x,y)  
+              self.end_values[y,x] = self.calculate_policy_state_value(x,y)  
 
 
   def do_iteration(self):        

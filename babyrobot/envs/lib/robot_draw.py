@@ -146,6 +146,9 @@ class RobotDraw( RobotPosition ):
               self.move_step += 1
 
           self.move_count += 1
+      else:
+          # not moving just pausing = action.Stay
+          sleep(self.sleep * (self.robot_size//self.step))
 
 
   def move_direction_colab( self, move_method_name ):

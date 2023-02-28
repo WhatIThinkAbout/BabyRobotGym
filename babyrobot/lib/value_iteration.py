@@ -31,30 +31,39 @@ class ValueIteration():
         calculate the values of all actions in the specified cell and return the largest of these
         - the next state value is given by:  v(s) = max[r + γv(s')]       
     '''    
-    # get the probability of moving to the intended target from this state
-    transition_probability = self.level.get_transition_probability( x, y )
 
     # get the list of all possible actions in this state
     all_actions = self.level.get_available_actions(x,y)
 
     # when an action is taken will either end in target state or one of the other possible states
     # - count the number of states other than the target state
-    num_alternative_states = len(all_actions) - 1 
+    num_alternative_states = len(all_actions) - 1   
 
     # calculate the value of each action in the state and save the largest
     max_value = float('-inf')
     for chosen_action in all_actions:
 
+      # get the probability of moving to the intended target from this state
+      transition_probability, barrier = self.level.get_transition_probability( x, y, Direction.from_action(chosen_action) )   
+
       # sum the values of the possible next states
       value = 0  
-      for action in all_actions:
+      for action in all_actions:       
 
         if action == chosen_action:
           # the chosen action is taken with the cell's transition probability
           probability = transition_probability
         else:
-          # the probability of ending up in another state is divided by the total number of other possible states
-          probability = (1-transition_probability)/num_alternative_states
+          # test if the chosen action resulted in running into a barrier
+          if barrier:
+            # a barrier causes the agent to end up moving in the opposite direction            
+            if Direction.from_action(action) == Direction.get_opposite(Direction.from_action(chosen_action)):              
+              probability = (1-transition_probability)
+            else:
+              probability = 0
+          else:
+            # the probability of ending up in another state is divided by the total number of other possible states
+            probability = (1-transition_probability)/num_alternative_states
 
         # get the reward for moving from the current cell in this direction
         reward, next_pos = self.level.get_reward( x, y, Direction.from_action(action) )   
@@ -62,6 +71,13 @@ class ValueIteration():
         # combine the reward with discounted value of the next state and 
         # sum over each of the transition probabilities p(s'|s,a)
         value += probability * (reward + (self.discount_factor * self.get_state_value( next_pos ))) 
+
+      # if there's only one possible action, and the chances of it happening is less than one,
+      # then must remain in same state if the action doesn't take place
+      if (num_alternative_states == 0) and (transition_probability < 1.0):
+        probability = (1-transition_probability)
+        reward = self.level.get_reward( x, y )
+        value += probability * (reward + (self.discount_factor * self.get_state_value( next_pos )))        
 
       # save the largest value
       if value > max_value:

@@ -2,6 +2,8 @@
 # Distributed under the terms of the Modified BSD License.
 
 import gymnasium
+import numpy as np
+import random
 
 from .lib.grid_level import GridLevel
 from .lib.graphical_grid_level import GraphicalGridLevel
@@ -9,6 +11,7 @@ from .lib.robot import Robot
 from .lib.robot_draw import RobotDraw
 from .lib.dynamic_space import Dynamic
 from .lib.direction import Direction
+from .lib.actions import Actions
 
 
 class BabyRobotInterface(gymnasium.Env):
@@ -16,6 +19,9 @@ class BabyRobotInterface(gymnasium.Env):
 
     def __init__(self, **kwargs):
         super().__init__()
+
+        # initialize the random seed to allow exact recreation of levels
+        self.set_seed(kwargs.get('seed',None))
 
         # get the rendering mode
         self.render_mode = kwargs.get('render_mode',None)
@@ -36,13 +42,9 @@ class BabyRobotInterface(gymnasium.Env):
         self.start = kwargs.get('start',[0,0])       
         self.end = kwargs.get('end',[self.max_x,self.max_y])        
         
-        # Baby Robot's initial position
-        # - by default this is the grid start 
-        self.initial_pos = kwargs.get('initial_pos',self.start)  
-
-        # Baby Robot's position in the grid
-        self.x = self.initial_pos[0]
-        self.y = self.initial_pos[1]         
+        # Baby Robot's initial position and current position in the grid
+        # - by default this is the grid start         
+        self.set_initial_pos( kwargs.get('initial_pos',self.start) )     
         
         # creation of the level
         if self.render_mode is None:        
@@ -60,7 +62,13 @@ class BabyRobotInterface(gymnasium.Env):
 
     #
     # Helper Methods
-    #         
+    #   
+     
+    def set_seed(self, seed = None):
+      ''' initialize the random seed to allow exact recreation of levels '''
+      if seed is not None:        
+        random.seed(seed)
+        np.random.seed(seed=seed)
 
     def take_action(self, action):
         ''' apply the supplied action 
@@ -112,12 +120,19 @@ class BabyRobotInterface(gymnasium.Env):
         return f"({self.x},{self.y}) {available_actions:36}"
 
 
-    def get_transition_probability( self, x = None, y = None ):
+    def get_transition_probability( self, x = None, y = None, direction: Direction = None ):
         ''' get the probability of moving to the intended target when in the specified cell '''
         # if no coordinate supplied use the current position
         if not x: x = self.x
         if not y: y = self.y      
-        return self.level.grid_base.get_transition_probability( x, y )
+        probability, barrier = self.level.grid_base.get_transition_probability( x, y, direction )
+        return probability, barrier
+    
+    def get_action_probabilities( self, x, y, action: Actions ):
+       ''' for an action in a state, return the list of possible next states and rewards 
+           and the accompanying probability for each = p(s',r|s,a)
+       '''
+       return self.level.get_action_probabilities( x, y, action )        
 
 
     def get_reward( self, x, y, direction = None ):
@@ -125,6 +140,14 @@ class BabyRobotInterface(gymnasium.Env):
             the reward for moving from (x,y) to the cell in the specified direction
         '''
         return self.level.get_reward(x,y,direction)
+
+    def set_initial_pos( self, pos ):
+        ''' set the initial position of Baby Robot ''' 
+        self.initial_pos = pos 
+        
+        # Baby Robot's current position in the grid                
+        self.x = self.initial_pos[0]
+        self.y = self.initial_pos[1]                
 
     #
     # Information Methods

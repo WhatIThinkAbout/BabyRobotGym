@@ -50,6 +50,9 @@ class RobotPosition( Robot ):
     def move(self,new_x,new_y):
         ' move from the current position to the specified position '
 
+        if (self.x_cell == new_x) and (self.y_cell == new_y):
+           self.move_direction(Direction.Stay)
+
         while (self.x_cell < (self.level.width-1)) and (self.x_cell < new_x):
           self.move_direction(Direction.East)
           self.x_cell += 1

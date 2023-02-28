@@ -9,13 +9,19 @@ from ..envs.lib.actions import Actions
 
 class Policy():
 
-  def __init__(self, level: BabyRobotInterface, directions: np.array = None):
+  def __init__(self, level: BabyRobotInterface, directions: np.array = None, seed = None):
     self.level = level
     if directions is None:
       # if no directions are supplied create a policy where all actions are equally likely
       self.directions = np.full((level.height,level.width), Direction.All)
     else:
       self.directions = directions
+
+    # no directions are possible in the terminal state
+    self.directions[level.end[1],level.end[0]] = 0
+
+    # set the seed used to choose random actions for a stochastic policy
+    np.random.seed(seed=seed)
 
   def set_policy(self,directions):
     ''' set the policy (i.e. the action to take in each state) '''
@@ -64,24 +70,32 @@ class Policy():
 
 
   def calculate_cell_directions(self,x,y,values):
+    ''' select the action with the highest value
+        = argmax[ sum(p(s',r|s,a)[r + γV(s')]) ]
+    '''
     actions = self.level.get_available_actions(x,y)
+
     directions = 0
     dir_value = 0
     best_value = -np.inf
     for action in actions:
-      # calculate the postion of the next state
-      if action == Actions.North: value = values[y-1,x]; dir_value = Direction.North
-      if action == Actions.South: value = values[y+1,x]; dir_value = Direction.South
-      if action == Actions.East:  value = values[y,x+1]; dir_value = Direction.East
-      if action == Actions.West:  value = values[y,x-1]; dir_value = Direction.West
+      # get the possible probabilities, next_states and rewards for this action
+      action_probabilities = self.level.get_action_probabilities( x, y, action )
+
+      action_value = 0
+      for probability,next_state,reward in action_probabilities:
+        # convert the x,y position into row,col
+        action_value += probability * (reward + values[next_state[1],next_state[0]])
+
+      dir_value = Direction.from_action(action)
 
       # if a best action has already been selected and the new action has a value
       # very close to this, then add this action to the set of greedy actions
-      if directions > 0 and math.isclose( value, best_value, rel_tol=1e-6):
+      if directions > 0 and math.isclose( action_value, best_value, rel_tol=1e-6):
         directions += dir_value
-      elif value > best_value:
+      elif action_value > best_value:
         directions = dir_value
-        best_value = value
+        best_value = action_value
 
     return int(directions)
 
@@ -144,7 +158,7 @@ class Policy():
     # get the allowed actions in the state
     actions = self.get_actions(x,y)
 
-    if len(actions) == 0:      
+    if len(actions) == 0:
       return {}
     else:
       equal_probability = 1 / len(actions)

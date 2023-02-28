@@ -23,6 +23,8 @@ class Cell:
         else:
           self.walls = {'N': True, 'S': True, 'E': True, 'W': True}
 
+        self.properties = {'N': {}, 'S': {}, 'E': {}, 'W': {} }
+
     def has_all_walls(self):
         """Does this cell still have all its walls?"""
 
@@ -35,17 +37,38 @@ class Cell:
         self.walls[wall] = False
         other.walls[Cell.wall_pairs[wall]] = False
 
-    def add_wall(self, other, wall):
+        self.properties[wall] = {}
+        other.properties[Cell.wall_pairs[wall]] = {}
+
+    def add_wall(self, other, wall, properties):
         """Add a wall between cells self and other."""
 
         self.walls[wall] = True
         other.walls[Cell.wall_pairs[wall]] = True
 
-    def toggle_wall(self, other, wall):
+        self.properties[wall] = properties
+        other.properties[Cell.wall_pairs[wall]] = properties
+
+    def toggle_wall(self, other, wall, properties):
         if self.walls[wall]:
           self.knock_down_wall(other,wall)
         else:
-          self.add_wall(other,wall)
+          self.add_wall(other,wall,properties)
+
+    def get_probability(self, direction):
+        ''' get the probability of being able to move in the supplied direction from this cell 
+            due to any walls or probabilistic walls defined for the cell
+
+            returns:
+            - the probability of moving from the current cell in the specified direction
+            - 'True' if a probabilistic barrier exists in the chosen direction, "False" otherwise
+        '''
+        if 'prob' in self.properties[direction]:
+           return self.properties[direction]['prob'], True
+        # if a wall exists there's zero probability of moving in that direction
+        # - otherwise there's 100% chance of moving in that direction wrt walls 
+        # (other properties of the cell may change this)
+        return 0 if self.walls[direction] else 1, False
 
 
 class Maze:
@@ -229,12 +252,41 @@ class Maze:
         # general, of course).
         for x in range(self.nx):
             for y in range(self.ny):
-                if self.cell_at(x, y).walls['S']:
+                cell = self.cell_at(x, y)
+                if cell.walls['S']:
                     x1, y1, x2, y2 = x * scx, (y + 1) * scy, (x + 1) * scx, (y + 1) * scy
+
+                    if 'color' in cell.properties['S']:
+                      canvas.stroke_style = cell.properties['S']['color']
+                    if 'width' in cell.properties['S']:
+                      canvas.line_width = cell.properties['S']['width']
+                    if 'fit' in cell.properties['S']:
+                      # truncate the wall horizontally
+                      x1 += (canvas.line_width//2)
+                      x2 -= (canvas.line_width//2)
+
                     draw_wall(x1, y1, x2, y2)
-                if self.cell_at(x, y).walls['E']:
+
+                    canvas.stroke_style = color
+                    canvas.line_width = wall_width
+
+                if cell.walls['E']:
                     x1, y1, x2, y2 = (x + 1) * scx, y * scy, (x + 1) * scx, (y + 1) * scy
+
+                    if 'color' in cell.properties['E']:
+                      canvas.stroke_style = cell.properties['E']['color']
+                    if 'width' in cell.properties['E']:
+                      canvas.line_width = cell.properties['E']['width']
+                    if 'fit' in cell.properties['E']:
+                      # truncate the wall vertically
+                      y1 += (canvas.line_width//2)
+                      y2 -= (canvas.line_width//2)
+
                     draw_wall(x1, y1, x2, y2)
+
+                    canvas.stroke_style = color
+                    canvas.line_width = wall_width
+
 
         # Draw the North and West maze border, which won't have been drawn
         # by the procedure above.

@@ -4,6 +4,7 @@ from enum import IntEnum
 from .maze import Maze
 import numpy as np
 from typing import Union
+from .direction import Direction
 
 
 class Puddle(IntEnum):
@@ -86,7 +87,9 @@ class GridBase():
       self.maze = Maze(self.width, self.height, self.start[0], self.start[1], no_walls = True)
       self.add_maze = True # we now have a maze to add to the canvas
 
-    for (loc), direction in walls:
+    # get the location, direction and optional properties for each wall
+    # e.g. ((1, 1),'S',{'color': 'blue'})
+    for (loc), direction, *props in walls:
       x = loc[0]
       y = loc[1]
       num_cells = loc[2] if len(loc) == 3 else 1
@@ -103,7 +106,7 @@ class GridBase():
         elif direction == 'S': next_cell = self.maze.cell_at(x,y+1)
 
         # add a new wall if none already otherwise remove
-        current_cell.toggle_wall(next_cell, direction)
+        current_cell.toggle_wall(next_cell, direction, props[0] if props else {})
 
         # move to the next cell for wall repeated across multiple cells
         if direction == 'E' or direction == 'W': y += 1
@@ -127,15 +130,26 @@ class GridBase():
     return Puddle.Dry
 
 
-  def get_transition_probability( self, x, y ):
-    ''' get the probability of moving to the target state when starting in the state at (x,y) '''
+  def get_transition_probability( self, x, y, direction: Direction = None ):
+    ''' get the probability of moving to the target state when starting in the state at (x,y) 
+
+    '''
+    # if no puddle or barrier then guaranteed to reach target
+    barrier = False
+    probability = 1
+
+    # if a direction is supplied find the probability of reaching the target state
+    # when moving in that direction from the current state
+    # - only relevant if a maze is defined and a probabilistic wall exists
+    if (self.maze is not None) and (direction is not None):
+        current_cell = self.maze.cell_at(x,y)
+        probability, barrier = current_cell.get_probability( Direction.get_direction_char(direction) )             
+
     puddle_size = self.get_puddle_size( x, y )
+    if puddle_size == Puddle.Large:   probability *= self.large_puddle_probability
+    elif puddle_size == Puddle.Small: probability *= self.small_puddle_probability  
 
-    if puddle_size == Puddle.Large: return self.large_puddle_probability
-    if puddle_size == Puddle.Small: return self.small_puddle_probability
-
-    # if no puddle then guaranteed to reach target
-    return 1.
+    return probability, barrier
 
 
   def get_reward( self, x: int = None, y: int = None ) -> Union[int,np.ndarray]:
@@ -204,10 +218,11 @@ class GridBase():
     # no rewards exist off the grid
     if self.test_for_base_area(x,y):
       return 0
-
-    # by definition the terminal state has a zero reward
+    
+    # moving to the terminal state takes one time period
+    # and therefore has a reward of -1
     if (x == self.end[0]) and (y == self.end[1]):
-      return 0
+      return -1   
 
     # if any grid areas exist these can set different rewards
     # - the most recently defined area is the one whose reward will be taken

@@ -30,8 +30,6 @@ class GridInfo():
         ax,ay,aw,ah = grid.get_area_defn(area)
       else:
         ax,ay,aw,ah = grid.get_area_defn(area[0])
-      # if (x >= ax and x < (ax + aw)) and ((y >= ay and y < (ay + ah))):
-      #   return {}
       if grid.in_area(x,y,ax,ay,aw,ah):
         return {}
 
@@ -40,7 +38,12 @@ class GridInfo():
       cell = grid.maze.cell_at( x, y )
 
       # if a wall is present then that direction is not possible as an action
-      actions = {k: not v for k, v in cell.walls.items()}
+      # - unless the wall properties define a probability of passing      
+      actions = {}
+      for k, v in cell.walls.items():    
+          if 'prob' in cell.properties[k]:
+              v = False
+          actions[k] = not v      
     else:
       # initially start with all actions being possible
       actions = {'N':True,'E':True,'S':True,'W':True}
