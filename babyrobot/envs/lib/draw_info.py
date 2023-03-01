@@ -236,21 +236,17 @@ class DrawInfo():
     padding = self.draw_grid.padding
     cell_pixels = self.draw_grid.cell_pixels
     px,py = self.draw_grid.grid_to_pixels( [x,y], padding, padding )
-
-    with hold_canvas(canvas):
-      canvas.clear_rect(px,py,cell_pixels,cell_pixels)
-
-    with hold_canvas(canvas):
-      self.arrows.draw(canvas,px,py,directions,color)
+    
+    canvas.clear_rect(px,py,cell_pixels,cell_pixels)
+    self.arrows.draw(canvas,px,py,directions,color)
 
 
   def draw_direction_arrow_array(self, directions: np.array):
     ''' draw arrows in each direction in the supplied numpy array '''
-    canvas = self.draw_grid.canvases[Level.Overlay]
-    with hold_canvas(canvas):
-      for y in range(directions.shape[0]):
-        for x in range(directions.shape[1]):
-          self.draw_direction_arrow( x, y, directions[y,x])
+    canvas = self.draw_grid.canvases[Level.Overlay]    
+    for y in range(directions.shape[0]):
+      for x in range(directions.shape[1]):
+        self.draw_direction_arrow( x, y, directions[y,x])
 
 
   '''
