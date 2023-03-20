@@ -202,6 +202,10 @@ class GridLevel():
     # get the reward for taking this action
     reward = self.grid_base.get_reward( next_pos[0], next_pos[1] )
 
+    # if we bounced off a barrier incur an extra time penalty of -1
+    if barrier:
+      reward += -1
+
     # for equal probability of taking an action its just the mean of all actions
     return next_pos, reward, target_state_reached
 

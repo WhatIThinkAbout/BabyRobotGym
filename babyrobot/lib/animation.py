@@ -59,7 +59,7 @@ class Animate():
     self.precision = kwargs.get('precision',1)
 
     # test if directions should be displayed
-    self.show_directions = kwargs.get('show_directions',True)    
+    self.show_directions = kwargs.get('show_directions',True)
 
     # test if an image should be written at each step
     self.create_images = kwargs.get('create_images',False)
@@ -83,7 +83,7 @@ class Animate():
       ((10,10),f"step: {details['step']}"),
       ((10,30),f"state: {details['state']}"),
       ((10,50),f"action: {details['action']}"),
-      ((10,70),f"new state: {details['new_state']}"),      
+      ((10,70),f"new state: {details['new_state']}"),
       ((10,90),f"direction: {details['direction']}"),
       ((10,110),f"reward: {details['reward']}"),
       ((10,130),f"done: {details['done']}"),
@@ -218,9 +218,9 @@ class Animate():
         if (self.partial_step % step_interval) == 0:
 
           self.step += 1
-          
+
           # keep going until the exit is reached
-          if not self.done:            
+          if not self.done:
 
             self.current_state = [self.env.x,self.env.y]
 
@@ -261,9 +261,9 @@ class Animate():
         # test if an action that caused a move occurred
         if Actions(self.last_action) is not Actions.Stay:
 
-          direction = Direction.get_direction(self.current_state,self.new_state)          
+          direction = Direction.get_direction(self.current_state,self.new_state)
 
-          # 'partial_move' moves part of the way to the next state          
+          # 'partial_move' moves part of the way to the next state
           self.env.robot.partial_move(direction)
 
         self.partial_step += 1
@@ -332,10 +332,10 @@ class Animate():
         if delta < self.policy_evaluation.threshold:
           self.convergence = True
 
-        # get and display the state values and directions        
+        # get and display the state values and directions
         directions = self.policy_evaluation.policy.calculate_greedy_directions(self.policy_evaluation.end_values) if self.show_directions else None
         self.env.show_info(get_info_string(self.partial_step, self.policy_evaluation.end_values, directions))
-        
+
         # add an extra delay between each step if images are being generated
         if self.create_images: sleep(2)
         self.env.render()

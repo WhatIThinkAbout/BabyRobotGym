@@ -1,6 +1,7 @@
 import os
 from enum import IntEnum
 from random import uniform
+import math
 from math import pi
 import json
 
@@ -230,7 +231,7 @@ class DrawGrid():
         px, py = self.grid_to_pixels([x,y])
 
         # adjust the area if its at the edges
-        half_border = self.border_width//2
+        half_border = math.ceil(self.border_width/2)
         if x == 0:
           px -= half_border
           width += half_border
@@ -282,7 +283,7 @@ class DrawGrid():
           if edge == 'N':
             x1 = self.padding + px
             y1 = self.padding + py
-            x2 = x1 + width-(2*self.padding)
+            x2 = x1 + width-(2*self.padding)-1
             y2 = y1
             self.draw_line( canvas, x1, y1, x2, y2 )
 
@@ -290,7 +291,7 @@ class DrawGrid():
           if edge == 'S':
             x1 = self.padding + px
             y1 = py + height - self.padding
-            x2 = x1 + width-(2*self.padding)
+            x2 = x1 + width-(2*self.padding)-1
             y2 = y1
             self.draw_line( canvas, x1, y1, x2, y2 )
 

@@ -163,6 +163,14 @@ class DrawInfo():
           for (cx,cy),value in text:
             self.draw_cell_text(cx,cy,value)
 
+      values = info.get('values',None)
+      if values is not None and isinstance(values,np.ndarray):
+        if len(values.shape) == 3:
+          if values.shape[2] == 5:
+            values = values[:,:,1:] # remove the 'stay' action values
+          self.draw_text_array(values)
+
+
 
   def process_direction_arrows(self,directions):
     ''' test if any arrows should be added to the grid '''
@@ -236,14 +244,14 @@ class DrawInfo():
     padding = self.draw_grid.padding
     cell_pixels = self.draw_grid.cell_pixels
     px,py = self.draw_grid.grid_to_pixels( [x,y], padding, padding )
-    
+
     canvas.clear_rect(px,py,cell_pixels,cell_pixels)
     self.arrows.draw(canvas,px,py,directions,color)
 
 
   def draw_direction_arrow_array(self, directions: np.array):
     ''' draw arrows in each direction in the supplied numpy array '''
-    canvas = self.draw_grid.canvases[Level.Overlay]    
+    canvas = self.draw_grid.canvases[Level.Overlay]
     for y in range(directions.shape[0]):
       for x in range(directions.shape[1]):
         self.draw_direction_arrow( x, y, directions[y,x])
@@ -293,7 +301,11 @@ class DrawInfo():
     with hold_canvas(self.canvas):
       for y in range(text.shape[0]):
         for x in range(text.shape[1]):
-          self.draw_cell_text( x, y, text[y,x])
+          if len(text.shape) == 2:
+            self.draw_cell_text( x, y, text[y,x])
+          else:
+            for z in range(text.shape[2]):
+                self.draw_cell_text( x, y, text[y,x,z], pos=z)
 
 
   def info_panel_text( self, x, y, text,width,height,
@@ -322,7 +334,7 @@ class DrawInfo():
       canvas.fill_rect(x,y-5,width,height)
 
 
-  def draw_cell_text( self, x, y, value, color = None, back_color = None ):
+  def draw_cell_text( self, x, y, value, color = None, back_color = None, pos = None ):
     ''' display the given value in the specified cell '''
 
     # dont draw anything if no text is supplied
@@ -360,6 +372,11 @@ class DrawInfo():
     bk_height = 20
     bk_width = 36
 
+    # use a smaller area when more than one text item is being written to the cell
+    if (pos is not None):
+      bk_height = 16
+      bk_width = 26
+
     # the width is set for 4 characters - expand if more than this
     if len(str(value)) > 4:
       bk_width += (len(str(value))-4) * 6
@@ -372,13 +389,36 @@ class DrawInfo():
     x_off = (bk_width//2)
     y_off = (bk_height//2)
 
+    if (pos is not None):
+      if pos == 0:
+        y_off += (self.draw_grid.cell_pixels // 4) + 4
+      elif pos == 1:
+        x_off -= (self.draw_grid.cell_pixels // 4)
+      elif pos == 2:
+        y_off -= (self.draw_grid.cell_pixels // 4) + 4
+      elif pos == 3:
+        x_off += (self.draw_grid.cell_pixels // 4)
+
     # use a smaller font size for high precision, since more digits to fit
     font_size = 14
-    text_offset = 5
+    txt_offy = 5
+    txt_offx = 0
     if (num_value and self.precision > 1) or \
        (not num_value and len(str(value)) >= 3):
           font_size = 12
-          text_offset = 4
+          txt_offy = 4
+    elif (pos is not None):
+        font_size = 11
+        if pos == 0:
+          txt_offy = -(self.draw_grid.cell_pixels // 4) 
+        elif pos == 1:
+          txt_offx = (self.draw_grid.cell_pixels // 4)
+          txt_offy = 4
+        elif pos == 2:
+          txt_offy = (self.draw_grid.cell_pixels // 4) + 8
+        elif pos == 3:          
+          txt_offx = -(self.draw_grid.cell_pixels // 4)
+          txt_offy = 4
     font_str = f"bold {font_size}px sans-serif"
 
     canvas.save()
@@ -393,6 +433,6 @@ class DrawInfo():
       canvas.fill_style = color
       canvas.text_align = 'center'
       canvas.font = font_str
-      canvas.fill_text(f"{value}", cx, cy+text_offset)
+      canvas.fill_text(f"{value}", cx+txt_offx, cy+txt_offy)
 
     canvas.restore()

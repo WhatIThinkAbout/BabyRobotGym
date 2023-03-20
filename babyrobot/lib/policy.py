@@ -65,8 +65,26 @@ class Policy():
     for y in range(self.level.height):
       for x in range(self.level.width):
         if (x != end[0]) or (y != end[1]):
-          directions[y,x] = self.calculate_cell_directions(x,y,values)
+          if len(values.shape) == 2:
+            directions[y,x] = self.calculate_cell_directions(x,y,values)
+          else:
+            directions[y,x] = self.get_greedy_direction(values[y][x])
     return directions
+
+
+  def get_greedy_direction( self, arr ):
+    ''' return the direction(s) with the maximum action value '''
+    directions = 0
+    best_value = -np.inf
+    for action in range(len(Actions)):
+      dir_value = Direction.from_action(action) 
+      action_value = arr[action]
+      if directions > 0 and math.isclose( action_value, best_value, rel_tol=1e-6):
+        directions += dir_value
+      elif action_value != 0 and action_value > best_value:
+        directions = dir_value
+        best_value = action_value 
+    return directions 
 
 
   def calculate_cell_directions(self,x,y,values):
