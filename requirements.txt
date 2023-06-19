@@ -10,3 +10,4 @@ jupyter-client==7.4.8
 jupyter-core>=5.0.0rc2
 jupyter-packaging==0.12.2
 jupyterlab-widgets==3.0.5
+tqdm==4.64.0
