@@ -22,24 +22,24 @@ class GridLevel():
 
     self.grid_base = GridBase( dir_path, **kwargs )
     self.grid_info = GridInfo( self.grid_base, **kwargs )
- 
+
   '''
       Query Functions
   '''
 
   def is_grid_state( self, x, y ):
     ''' test if the specified state is a valid state
-        i.e. it lies on the grid level 
+        i.e. it lies on the grid level
     '''
     if (x < 0) or (x >= self.grid_base.width) or \
        (y < 0) or (y >= self.grid_base.height) or \
-       self.grid_base.test_for_base_area( x, y ): 
+       self.grid_base.test_for_base_area( x, y ):
       return False
 
     # the terminal state doesn't count as a valid grid state
     if (x == self.grid_base.end[0]) and (y== self.grid_base.end[1]):
       return False
-    
+
     return True
 
 
@@ -60,8 +60,8 @@ class GridLevel():
 
 
   def get_action_probabilities( self, x, y, action: Actions ):
-    
-    direction = Direction.from_action( action )  
+
+    direction = Direction.from_action( action )
     assert direction >= Direction.Stay and direction <= Direction.West
 
     # check that some actions are possible in this state
@@ -72,7 +72,7 @@ class GridLevel():
       # - target only reached if choosing to stay in same state
       reward = self.grid_base.get_reward( x, y )
       return [[1.0,[x,y],reward]]
-          
+
     # get the probability of moving to the intended target
     transition_probability, barrier = self.grid_base.get_transition_probability( x, y, direction )
 
@@ -80,30 +80,30 @@ class GridLevel():
 
     # find the details of where we end up if action succeeds
     if transition_probability > 0.0:
-      next_pos = self.get_next_state_position( x, y, direction )        
-      reward = self.grid_base.get_reward( next_pos[0], next_pos[1] )  
+      next_pos = self.get_next_state_position( x, y, direction )
+      reward = self.grid_base.get_reward( next_pos[0], next_pos[1] )
       action_list.append([transition_probability,next_pos,reward])
 
     # if the transition probability is 1 then definitely reach target
     if transition_probability == 1.0:
       return action_list
-    
+
     #
     # transition_probability < 1.0
     # - more than one next_state for current action
     #
-        
+
     # get the list of all other possible states
     all_actions = self.grid_info.get_cell_directions(x,y)
     all_actions.pop(direction.get_direction_char(), None)
-    other_states = [key for (key, value) in all_actions.items() if value]    
+    other_directions = [key for (key, value) in all_actions.items() if value]
 
     # if there are no other states to go to, stay in the current state
-    if len(other_states) == 0:
+    if len(other_directions) == 0:
       reward = self.grid_base.get_reward( x, y )
       action_list.append([(1.0 - transition_probability),[x,y],reward])
-      return action_list        
-        
+      return action_list
+
     if barrier:
       # an extra penalty of -1 is given for running into a wall
       reward = -1
@@ -112,29 +112,29 @@ class GridLevel():
       # the opposite action if this exists (i.e. he bounces off the barrier)
       # - this happens with probability (1-transition_probability)
       direction = Direction.get_opposite(direction).get_direction_char()
-      
+
       # check that the opposite direction is possible
-      if direction not in other_states:
+      if direction not in other_directions:
         # opposite direction not possible - stay in current state
         reward += self.grid_base.get_reward( x, y )
         action_list.append([(1.0 - transition_probability),next_pos,reward])
-        return action_list         
+        return action_list
 
-      next_pos = self.get_next_state_position( x, y, direction )        
+      next_pos = self.get_next_state_position( x, y, direction )
       reward += self.grid_base.get_reward( next_pos[0], next_pos[1] )
       action_list.append([(1.0 - transition_probability),next_pos,reward])
       return action_list
-    
+
     # divide the remaining probability over the other possible directions
-    probability = (1.0-transition_probability)/len(other_states)
-    for state in other_states:
+    probability = (1.0-transition_probability)/len(other_directions)
+    for other_direction in other_directions:
       # calculate the postion of the next state
-      next_pos = self.get_next_state_position( x, y, direction )
+      next_pos = self.get_next_state_position( x, y, other_direction )
       reward = self.grid_base.get_reward( next_pos[0], next_pos[1] )
       action_list.append([probability,next_pos,reward])
 
     return action_list
-          
+
 
   def get_next_state( self, x, y, direction ):
     ''' return the next state and reward for moving
@@ -187,11 +187,11 @@ class GridLevel():
           # if a barrier existed in the target direction then Baby Robot will end up taking
           # the opposite action if this exists (i.e. he bounces off the barrier)
           direction = Direction.get_opposite(chosen_action[0])
-          
+
           # check that the opposite direction is possible
           if direction not in other_states:
             return [x,y],-1,False
-          
+
         else:
           # choose one of the other possible states
           direction = np.random.choice(other_states)
@@ -212,7 +212,7 @@ class GridLevel():
 
   def get_next_state_position( self, x, y, direction ):
     ''' given the current state position and direction calculate the postion of the next state '''
-    next_pos = []    
+    next_pos = []
     if direction==Direction.North or direction == 'N': next_pos = [x,y-1]
     elif direction==Direction.South or direction == 'S': next_pos = [x,y+1]
     elif direction==Direction.East or direction == 'E': next_pos = [x+1,y]
