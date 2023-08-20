@@ -91,6 +91,11 @@ We've created the environment with all our required packages, so now it's just a
 (when you're finished playing with this environment run "conda deactivate" to get back out)
 
 
+And once the environment has been activated, to create a Jupyter kernel, run the following. This will let the environment be selected from within your Jupyter notebook:
+
+`python -m ipykernel install --user --name=BabyRobotGym`
+
+
 <br><br>
 ## 4\.&nbsp; <b><i>Run the notebook</b></i>
 

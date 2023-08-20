@@ -23,7 +23,6 @@ dependencies:
   - gstreamer=1.14.0
   - icu=58.2
   - ipython_genutils=0.2.0
-  - ipywidgets=7.6.5
   - jinja2=3.0.3
   - jpeg=9e
   - jupyter_client=7.2.2
@@ -85,7 +84,7 @@ dependencies:
   - zlib=1.2.12
   - pip:
     - argon2-cffi-bindings==21.2.0
-    - babyrobot>=1.0.36
+    - babyrobot>=1.0.40
     - beautifulsoup4==4.11.1
     - certifi==2021.5.30
     - cffi==1.15.0

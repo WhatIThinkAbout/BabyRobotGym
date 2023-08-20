@@ -15,6 +15,9 @@ class DrawInfo():
   text_bg_color = 'rgba(40,40,40,0.7)' # text background shading
   text_fg_color = '#fff'               # text foreground color
 
+  zero_fg_color = text_fg_color        # zero value text background shading
+  zero_bg_color = text_bg_color        # zero value text foreground color
+
   precision = 3   # the precision to use when writing floating point values
 
 
@@ -53,7 +56,7 @@ class DrawInfo():
 
       # test if any directions have been specified to add to the grid
       directions = props.get('directions',None)
-      if directions is not None:
+      if directions is not None:        
         self.process_direction_arrows(directions)
         self.process_direction_text(directions)
 
@@ -231,6 +234,10 @@ class DrawInfo():
         self.text_fg_color = colors.get('text_fg', self.text_fg_color)
         self.text_bg_color = colors.get('text_bg', self.text_bg_color)
 
+        # colors for zero values - by default the same as standard text
+        self.zero_fg_color = colors.get('zero_fg', self.text_fg_color)
+        self.zero_bg_color = colors.get('zero_bg', self.text_bg_color)
+
 
   '''
       Direction Arrow Functions
@@ -246,7 +253,8 @@ class DrawInfo():
     px,py = self.draw_grid.grid_to_pixels( [x,y], padding, padding )
 
     canvas.clear_rect(px,py,cell_pixels,cell_pixels)
-    self.arrows.draw(canvas,px,py,directions,color)
+    with hold_canvas(canvas):
+      self.arrows.draw(canvas,px,py,directions,color)
 
 
   def draw_direction_arrow_array(self, directions: np.array):
@@ -362,8 +370,13 @@ class DrawInfo():
     canvas = self.canvas
     padding = self.draw_grid.padding
 
-    if color is None: color = self.text_fg_color
-    if back_color is None: back_color = self.text_bg_color
+    if color is None: 
+      if value==0: color = self.zero_fg_color
+      else:        color = self.text_fg_color
+
+    if back_color is None:
+      if value==0: back_color = self.zero_bg_color
+      else:        back_color = self.text_bg_color
 
     gx,gy = self.draw_grid.grid_to_pixels( [x,y], padding, padding )
     cx,cy = self.draw_grid.get_center(gx,gy) # calculate the center of this cell
@@ -410,13 +423,13 @@ class DrawInfo():
     elif (pos is not None):
         font_size = 11
         if pos == 0:
-          txt_offy = -(self.draw_grid.cell_pixels // 4) 
+          txt_offy = -(self.draw_grid.cell_pixels // 4)
         elif pos == 1:
           txt_offx = (self.draw_grid.cell_pixels // 4)
           txt_offy = 4
         elif pos == 2:
           txt_offy = (self.draw_grid.cell_pixels // 4) + 8
-        elif pos == 3:          
+        elif pos == 3:
           txt_offx = -(self.draw_grid.cell_pixels // 4)
           txt_offy = 4
     font_str = f"bold {font_size}px sans-serif"
@@ -428,7 +441,7 @@ class DrawInfo():
       if back_color is not None:
         canvas.fill_style = back_color
         canvas.fill_rect(cx-x_off,cy-y_off,bk_width,bk_height)
-
+    
     with hold_canvas(canvas):
       canvas.fill_style = color
       canvas.text_align = 'center'

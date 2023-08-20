@@ -21,26 +21,23 @@ class MonteCarlo():
   rewards: np.array             # rewards array to be initialised by child class
   values: np.array              # values array to be initialised by child class
 
-  def __init__(self, policy: Policy, **setup):
+  def __init__(self, policy: Policy, exploring_starts=False, every_visit=False, env=None, **env_setup):
 
-    # process and store any supplied setup parameters
-    self.set_parameters(**setup)
+    # store the setup used to define the environment
+    self.env_setup = env_setup
+
+    self.exploring_starts = exploring_starts
+    self.every_visit = every_visit
 
     # store the policy used to select actions in the environment
     self.policy = policy
-
-    # create an evaluation version of the environment
-    self.env = babyrobot.make("BabyRobot-v0", render_mode=None, **setup)
-
-
-  def set_parameters(self, **setup):
-    '''
-        set all the parameters using any supplied values,
-        otherwise use the defaults
-    '''
-    # store the setup used to define the environment
-    self.setup = setup
-    self.exploring_starts = setup.get('exploring_starts',False)
+    
+    if env is None:
+      # create an evaluation version of the environment
+      self.env = babyrobot.make("BabyRobot-v0", render_mode=None, **env_setup)
+    else:
+      # use the supplied environment
+      self.env = env
 
 
   #
@@ -51,7 +48,7 @@ class MonteCarlo():
     ''' create a graphical version of the environment - virtual base method '''
     raise NotImplementedError()
 
-  def show_state_values(self):
+  def show_values(self):
     ''' show the calculated state values '''
     env = self.get_graphical_environment(self.returns)
     return env
@@ -99,50 +96,22 @@ class MonteCarlo():
     return self.last_start_pos
 
 
-  # def rewards_to_returns(self, state_rewards):
-  #   ''' work backwards to convert the rewards into returns '''
-  #   γ = 1.0
-  #   G = 0
-  #   state_returns = []
-  #   for state, reward in reversed(state_rewards):
-  #     G = reward + γ*G
-  #     state_returns.append((state,G))
-
-  #   # put back into the order of states visited
-  #   state_returns.reverse()
-  #   return state_returns
-
-
   def single_episode(self):
     '''
       run a single episode to collect the reward for each action of the trajectory
       - virtual base method
     '''
     raise NotImplementedError()
-    # state,info = self.env.reset()
-    # state_rewards = []
-    # total_reward = 0
-    # terminated = False
-    # while not terminated:
-    #   # get the policy's action in the current state
-    #   action = self.policy.get_action(self.env.x,self.env.y)
-
-    #   new_state, reward, terminated, truncated, info = self.env.step(action)
-    #   total_reward += reward
-    #   state_rewards.append((state,reward))
-    #   state = new_state
-
-    # return state_rewards
 
 
   def get_returns(self):
     raise NotImplementedError()
 
 
-  def run(self, max_episodes = 1, delta_interval = 10, delta_type = DeltaType.Max):
+  def run(self, max_episodes = 1, delta_interval = 10, delta_type = DeltaType.Max, hide_progress = False):
 
     deltas = []
-    for episode in (pbar :=tqdm(range(max_episodes))):
+    for episode in (pbar:=tqdm(range(max_episodes), disable=hide_progress)):
 
       initial_values = self.returns.copy()
 
@@ -153,9 +122,9 @@ class MonteCarlo():
       returns = self.rewards_to_returns(rewards)
       self.get_returns(returns)
 
-      # save the change in the state values at regular intervals
+      # save the change in the calculated values at regular intervals
       if episode%delta_interval == 0:
-        # calculate the difference in the state values from the start to end of the iteration
+        # calculate the difference in the values from the start to end of the iteration
         if delta_type == DeltaType.Max:
           delta = np.max(np.abs(self.returns - initial_values))  # get the largest difference
         else:
@@ -163,7 +132,7 @@ class MonteCarlo():
         deltas.append(delta)
         pbar.set_description(f"Delta {delta:0.5f}")
 
-    return np.round(self.returns), self.visits, deltas
+    return self.returns, self.visits, deltas
 
 
 
@@ -182,7 +151,7 @@ class MonteCarloStateValues( MonteCarlo ):
 
   def get_graphical_environment(self, text_data):
     ''' create a graphical version of the environment '''
-    env = babyrobot.make("BabyRobot-v0", **self.setup)
+    env = babyrobot.make("BabyRobot-v0", **self.env_setup)
     info = {'text': text_data, 'precision': 0}
     env.show_info(info)
     return env
@@ -222,12 +191,38 @@ class MonteCarloStateValues( MonteCarlo ):
     return state_rewards
 
 
+  def get_returns(self, state_returns):
+    ''' find the value of the first visit to a state '''
+    episode_visits = np.zeros((self.env.height,self.env.width))
+
+    # the first time a state is seen store the return value
+    for s, G in state_returns:
+
+      # if first-visit only process the state if it hasn't already been visited
+      if self.every_visit or episode_visits[s[1],s[0]] == 0:
+
+        # keep a count of the number of times this state is visited during this episode
+        episode_visits[s[1],s[0]] += 1
+
+        # increment the total count of first visits to this state
+        self.visits[s[1],s[0]] += 1
+
+        # get (1/visits) setting the result of any divide by zero to zero
+        inv_visits = 1 / self.visits[s[1],s[0]]
+
+        # only update the average returns of the states visited in this episode
+        self.returns[s[1],s[0]] = ((1 - inv_visits)*self.returns[s[1],s[0]]) + (inv_visits*G)
+
+
 
 class MonteCarloActionValues( MonteCarlo ):
   ''' base class for Monte Carlo methods calculating action values '''
 
-  def __init__(self, policy: Policy, **setup):
-    super().__init__(policy, **setup)
+  def __init__(self, policy: Policy, epsilon=0, env=None, seed=None, **setup):
+    super().__init__(policy, env=env, **setup)
+
+    # set the probability of taking a random action
+    self.epsilon = epsilon
 
     # keep a count of the visits to each action
     self.visits = np.zeros((self.env.height,self.env.width, len(Actions)))
@@ -235,10 +230,14 @@ class MonteCarloActionValues( MonteCarlo ):
     # the average returns for each action
     self.returns = np.zeros((self.env.height, self.env.width, len(Actions)))
 
+    # set the seed used to choose random actions
+    if seed is not None:
+      np.random.seed(seed=seed)    
+
 
   def get_graphical_environment(self, text_data):
     ''' create a graphical version of the environment '''
-    env = babyrobot.make("BabyRobot-v0", **self.setup)
+    env = babyrobot.make("BabyRobot-v0", **self.env_setup)
     info = {'values': text_data, 'precision': 0}
     env.show_info(info)
     return env
@@ -267,8 +266,17 @@ class MonteCarloActionValues( MonteCarlo ):
     total_reward = 0
     terminated = False
     while not terminated:
-      # get the policy's action in the current state
-      action = self.policy.get_action(self.env.x,self.env.y)
+
+      # probability of selecting a random action
+      p = np.random.random()
+
+      # if the probability is less than epsilon then a random action
+      # is chosen from the state's available actions
+      if p < self.epsilon:
+        action = self.env.action_space.sample()
+      else:
+        # get the policy's action in the current state
+        action = self.policy.get_action(self.env.x,self.env.y)
 
       new_state, reward, terminated, truncated, info = self.env.step(action)
       total_reward += reward
@@ -278,176 +286,20 @@ class MonteCarloActionValues( MonteCarlo ):
     return action_rewards
 
 
-
-'''
-    First Visit Monte Carlo
-'''
-
-
-class MonteCarlo_FirstVisit( MonteCarloStateValues ):
-
-  def __init__(self, policy: Policy, **setup):
-    super().__init__(policy, **setup)
-
-
-  def get_returns(self, state_returns):
-    ''' find the value of the first visit to a state '''
-    episode_visits = np.zeros((self.env.height,self.env.width))
-
-    # the first time a state is seen store the return value
-    for s, G in state_returns:
-      # only process the state if it hasn't already been visited
-      if episode_visits[s[1],s[0]] == 0:
-        episode_visits[s[1],s[0]] += 1
-
-        # increment the total count of first visits to this state
-        self.visits[s[1],s[0]] += 1
-
-        # get (1/visits) setting the result of any divide by zero to zero
-        inv_visits = 1 / self.visits[s[1],s[0]]
-
-        # only update the average returns of the states visited in this episode
-        self.returns[s[1],s[0]] = ((1 - inv_visits)*self.returns[s[1],s[0]]) + (inv_visits*G)
-
-
-  # def run(self, max_episodes = 1, delta_interval = 10, delta_type = DeltaType.Max):
-
-  #   deltas = []
-  #   for episode in (pbar :=tqdm(range(max_episodes))):
-
-  #     initial_values = self.returns.copy()
-
-  #     # set the next start position
-  #     self.env.set_initial_pos(self.get_next_start_state())
-
-  #     state_rewards = self.single_episode()
-  #     state_returns = self.rewards_to_returns(state_rewards)
-  #     self.get_first_visit_return(state_returns)
-
-  #     # save the change in the state values at regular intervals
-  #     if episode%delta_interval == 0:
-  #       # calculate the difference in the state values from the start to end of the iteration
-  #       if delta_type == DeltaType.Max:
-  #         delta = np.max(np.abs(self.returns - initial_values))  # get the largest difference
-  #       else:
-  #         delta = np.mean(np.abs(self.returns - initial_values)) # get the average difference
-  #       deltas.append(delta)
-  #       pbar.set_description(f"Delta {delta:0.5f}")
-
-  #   return np.round(self.returns), self.visits, deltas
-
-
-
-'''
-    Every Visit Monte Carlo
-'''
-
-
-class MonteCarlo_EveryVisit( MonteCarloStateValues ):
-
-  def __init__(self, policy: Policy, **setup):
-    super().__init__(policy, **setup)
-
-
-  def get_returns(self, state_returns):
-    ''' use the return from every state visit to calculate the average return '''
-
-    # the first time a state is seen store the return value
-    for s, G in state_returns:
-
-      # increment the count of visits to this state
-      self.visits[s[1],s[0]] += 1
-
-      # get the inverse of visits to this state
-      inv_visits = 1 / self.visits[s[1],s[0]]
-
-      # only update the average return of the current state
-      self.returns[s[1],s[0]] = ((1 - inv_visits)*self.returns[s[1],s[0]]) + (inv_visits*G)
-
-
-  # def run(self, max_episodes = 1, delta_interval = 10, delta_type = DeltaType.Max):
-
-  #   deltas = []
-  #   for episode in (pbar :=tqdm(range(max_episodes))):
-
-  #     initial_values = self.returns.copy()
-
-  #     # set the next start position
-  #     self.env.set_initial_pos(self.get_next_start_state())
-
-  #     state_rewards = self.single_episode()
-  #     state_returns = self.rewards_to_returns(state_rewards)
-  #     self.get_every_visit_return(state_returns)
-
-  #     # save the change in the state values at regular intervals
-  #     if episode%delta_interval == 0:
-  #       # calculate the difference in the state values from the start to end of the iteration
-  #       if delta_type == DeltaType.Max:
-  #         delta = np.max(np.abs(self.returns - initial_values))  # get the largest difference
-  #       else:
-  #         delta = np.mean(np.abs(self.returns - initial_values)) # get the average difference
-  #       deltas.append(delta)
-  #       pbar.set_description(f"Delta {delta:0.5f}")
-
-  #   return np.round(self.returns), self.visits, deltas
-
-
-
-
-'''
-    First-Visit MC Action Values
-'''
-
-class MonteCarlo_FirstVisit_ActionValues( MonteCarloActionValues ):
-
-  def __init__(self, policy: Policy, **setup):
-    super().__init__(policy, **setup)
-
-
-  # def single_episode(self):
-  #   '''
-  #     run a single episode to collect the reward for each action of the trajectory
-  #   '''
-  #   state,info = self.env.reset()
-  #   action_rewards = []
-  #   total_reward = 0
-  #   terminated = False
-  #   while not terminated:
-  #     # get the policy's action in the current state
-  #     action = self.policy.get_action(self.env.x,self.env.y)
-
-  #     new_state, reward, terminated, truncated, info = self.env.step(action)
-  #     total_reward += reward
-  #     action_rewards.append((state,action,reward))
-  #     state = new_state
-
-  #   return action_rewards
-
-
-  # def rewards_to_returns(self, rewards):
-  #   # work backwards to convert the rewards into returns
-  #   γ = 1.0
-  #   G = 0
-  #   returns = []
-  #   for state, action, reward in reversed(rewards):
-  #     G = γ*G + reward
-  #     returns.append((state,action,G))
-
-  #   # put back into the order of actions visited
-  #   returns.reverse()
-  #   return returns
-
-
   def get_returns(self, returns):
-    ''' find the value of the first visit to a state '''
+    ''' get the return values for each state '''
 
-    episode_visits = np.zeros((self.env.height, self.env.width, len(Actions)))
+    # the count of the number of times each action is visited during this episode
+    action_visits = np.zeros((self.env.height, self.env.width, len(Actions)))
 
-    # the first time a state is seen store the return value
+    # process every state-action pair in the supplied set of returns
     for s, a, G in returns:
-      # only process the state action if it hasn't already been visited
-      if episode_visits[s[1],s[0],a] == 0:
-        episode_visits[s[1],s[0],a] += 1
+
+      # if first-visit only process the action if it hasn't already been visited
+      if self.every_visit or action_visits[s[1],s[0],a] == 0:
+
+        # keep a count of the number of times this action is visited during this episode
+        action_visits[s[1],s[0],a] += 1
 
         # increment the total count of first visits to this state action
         self.visits[s[1],s[0],a] += 1
@@ -459,28 +311,76 @@ class MonteCarlo_FirstVisit_ActionValues( MonteCarloActionValues ):
         self.returns[s[1],s[0],a] = ((1 - inv_visits)*self.returns[s[1],s[0],a]) + (inv_visits*G)
 
 
-  # def run(self, max_episodes = 1, delta_interval = 10, delta_type = DeltaType.Max):
 
-  #   deltas = []
-  #   for episode in (pbar :=tqdm(range(max_episodes))):
 
-  #     initial_values = self.returns.copy()
+class MonteCarloGPI():
 
-  #     # set the next start position
-  #     self.env.set_initial_pos(self.get_next_start_state())
+  def __init__(self, policy: Policy, evaluation_steps=1, epsilon=0.1, delta_type=DeltaType.Mean, **env_setup):    
+    self.policy = policy
+    self.evaluation_steps = evaluation_steps
+    self.epsilon = epsilon
+    self.delta_type = delta_type
 
-  #     rewards = self.single_episode()
-  #     returns = self.rewards_to_returns(rewards)
-  #     self.get_first_visit_return(returns)
+    # create an evaluation version of the environment
+    self.env = babyrobot.make("BabyRobot-v0", render_mode=None, **env_setup)    
 
-  #     # save the change in the state values at regular intervals
-  #     if episode%delta_interval == 0:
-  #       # calculate the difference in the state values from the start to end of the iteration
-  #       if delta_type == DeltaType.Max:
-  #         delta = np.max(np.abs(self.returns - initial_values))  # get the largest difference
-  #       else:
-  #         delta = np.mean(np.abs(self.returns - initial_values)) # get the average difference
-  #       deltas.append(delta)
-  #       pbar.set_description(f"Delta {delta:0.5f}")
+    # keep a count of the first visits to each action
+    self.visits = np.zeros((self.env.height, self.env.width, len(Actions)))
 
-  #   return np.round(self.returns), self.visits, deltas
+    # the average returns for each action
+    self.action_values = np.zeros((self.env.height, self.env.width, len(Actions)))    
+
+    # keep track of the deltas over the run
+    self.deltas = []
+
+
+  def do_iteration(self,seed=None):  
+
+        initial_values = self.action_values.copy()     
+
+        mc = MonteCarloActionValues(self.policy, epsilon = self.epsilon, env = self.env, seed = seed)
+        eval_values, eval_visits, _ = mc.run(self.evaluation_steps, hide_progress = True)
+
+        # increment the count of any actions that have been visited
+        self.visits += eval_visits
+
+        # get (1/visits) setting the result of any divide by zero to zero
+        inv_visits = np.reciprocal(self.visits, where=self.visits!=0)
+
+        # only update the average action values of the states visited in this episode
+        self.action_values = self.action_values + (inv_visits * (eval_values - (self.action_values*eval_visits)))
+
+        # update the policy with respect to the latest calculated action values
+        self.policy.update_policy(self.action_values)  
+
+        # calculate the difference in the action values from the start to end of the iteration
+        if self.delta_type == DeltaType.Max:
+          delta = np.max(np.abs(self.action_values - initial_values))  # get the largest difference
+        else:
+          delta = np.mean(np.abs(self.action_values - initial_values)) # get the average difference      
+
+        # save the change in the action values 
+        self.deltas.append(delta)          
+
+        return delta      
+
+
+  # def run( self, max_iterations=10, evaluation_steps=1, epsilon=0.1, min_delta=None, delta_interval=1, delta_type=DeltaType.Mean ):
+
+  def run( self, max_iterations=10, min_delta=None, seed=None ):    
+    ''' run 'max_iterations' of policy evaluation and improvement 
+      - policy evaluation uses first-visit MC and runs for 'evaluation_steps' steps
+    '''      
+    
+    self.deltas = []
+    for episode in (pbar:=tqdm(range(max_iterations))):      
+
+      # perform a single step of MC GPI
+      delta = self.do_iteration(seed)
+      pbar.set_description(f"Delta {delta:0.5f}")
+
+      # if a minimum delta has been supplied test if the new delta has reached the threshold
+      if min_delta is not None and delta < min_delta: 
+        break      
+
+    return self.action_values, self.visits, self.deltas, episode

@@ -12,7 +12,7 @@ import gymnasium
 class Utils():
 
   def setup_play_level( level:GridLevel, on_update, interval=1000, min=0, max=8 ):
-    ''' setup all the main components required to animate a grid level '''
+    ''' setup all the main components required to animate a grid level '''    
     play = Play(interval=interval, min=min, max=max, step=1)
     progress = IntProgress(min=min, max=max)
 

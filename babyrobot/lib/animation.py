@@ -11,6 +11,8 @@ from ..envs.lib import Direction
 from . import Utils
 from . import PolicyEvaluation
 from . import Policy
+from . import MonteCarloGPI
+
 
 from ipywidgets import HBox, VBox
 
@@ -61,6 +63,13 @@ class Animate():
     # test if directions should be displayed
     self.show_directions = kwargs.get('show_directions',True)
 
+    # test if state or action visits should be shown
+    # - MC only
+    self.show_visits = kwargs.get('show_visits',True)
+
+    # can turn off all side-panel info
+    self.show_info =  kwargs.get('show_info',True)
+
     # test if an image should be written at each step
     self.create_images = kwargs.get('create_images',False)
 
@@ -92,7 +101,7 @@ class Animate():
     return info
 
 
-  def write_file(self):
+  def write_file(self,delay=5):
     '''
         write the current environment to a file and wait for it to be created
     '''
@@ -110,7 +119,7 @@ class Animate():
         time.sleep(1)
         time_counter += 1
         if time_counter > time_to_wait:break
-    time.sleep(5)
+    time.sleep(delay)
 
 
   def clear_image_folder(self):
@@ -129,6 +138,10 @@ class Animate():
     movie_name = kwargs.get('movie_name',"")
     movie_frames = kwargs.get('movie_frames',self.max_partial_step)
 
+    # the folder to use when generating images during the run
+    # - by default use the same folder as that used for generation
+    image_folder = kwargs.get('image_folder',self.image_folder)
+
     # use the supplied duration parameter if present
     if 'duration' in kwargs:
       self.duration = kwargs.get('duration')
@@ -136,10 +149,12 @@ class Animate():
     print(f"Creating the movie: {movie_name} (duration = {self.duration}, steps = {movie_frames})",end="")
     with imageio.get_writer(movie_name, mode='I', duration=self.duration) as writer:
       for index in range(0,movie_frames+1):
-        file = f"{self.image_folder}/step_{index}.png"
+        file = f"{image_folder}/step_{index}.png"
         if os.path.exists(file):
           image = imageio.imread(file)
           writer.append_data(image)
+        else:
+          print(f"Could not find image: {file}")
     print(f" - Complete")
 
     # remove the images when the movie has been made
@@ -161,9 +176,11 @@ class Animate():
     # - this then saves the current view
     def save_to_file(*args, **kwargs):
         # do a save and restore to force canvas update before writing
-        self.canvases[3].save()
-        self.canvases[3].restore()
-        self.canvases.to_file(f'{self.image_folder}/step_{self.partial_step}.png')
+        # self.canvases[3].save()
+        # self.canvases[3].restore()
+        # self.canvases.to_file(f'{self.image_folder}/step_{self.partial_step}.png')
+        self.write_file(delay=1)
+        self.write_file(delay=1)
 
     if self.create_images:
       Utils.create_image_directory(self.image_folder)
@@ -349,6 +366,97 @@ class Animate():
     # add the initial state values to the grid at partial_step = 0
     directions = self.policy_evaluation.policy.calculate_greedy_directions(self.policy_evaluation.end_values) if self.show_directions else None
     self.env.show_info(get_info_string(self.partial_step, self.policy_evaluation.end_values, directions))
+    self.env.render()
+
+    return self.show(on_update,**kwargs)
+
+
+
+  def show_monte_carlo_gpi(self, monte_carlo_gpi: MonteCarloGPI, min_delta=None, seed=None, **kwargs):
+    '''
+        animate the iterations of policy evaluation
+    '''
+    # store the supplied policy evaluation object
+    self.monte_carlo_gpi = monte_carlo_gpi
+
+    # the minimum delta stopping point
+    self.min_delta = min_delta
+
+    # the default time between each step when just displaying the episode
+    self.kPlayInterval = 80
+
+    # the default time between each step when creating images from the episode
+    self.kImageInterval = 3000
+
+    # setup any supplied parameter values
+    self.set_parameters(**kwargs)
+
+    # the time between each frame if a movie is created
+    self.duration = 1.0
+
+    # each step is a single step_interval
+    self.max_partial_step = self.max_steps
+
+    # flag to indicate if policy evaluation has converged
+    self.convergence = False
+
+    # save the initial state action values
+    self.initial_values = self.monte_carlo_gpi.action_values.copy()
+
+    # set the seed used to choose random actions
+    self.seed = seed
+    if seed is not None:
+      np.random.seed(seed=seed)
+
+
+    # helper function to display grid information
+    def get_info_string( iteration, values, directions=None, delta=0 ):      
+
+      # test if directions should be shown - otherwise show supplied values
+      if self.show_directions and directions is not None:
+        info = {'directions': {'arrows':directions,'text':directions}}
+      else:
+        info = {'values': values, 'precision': self.precision}
+
+      if self.show_info and iteration is not None:
+        info_string = [((10,10),f"Iteration: {iteration}"),
+                       ((10,30),f"Delta: {delta:.4f}")]
+        if self.convergence:
+          info_string.append(((10,50),"Convergence"))
+        info['side_info'] = info_string
+      return info
+
+    def on_update(*args):
+
+      if self.partial_step <= self.max_partial_step and self.convergence == False:
+
+        self.partial_step += 1
+        delta = self.monte_carlo_gpi.do_iteration(self.seed)
+
+        # test if the difference is less than the defined convergence threshold
+        if self.min_delta is not None and delta < self.min_delta:
+          print(f"delta: {delta} min_delta: {min_delta} convergence: {self.convergence}")
+          self.convergence = True
+
+        # get and display the state values, visits or directions
+        directions = self.monte_carlo_gpi.policy.get_directions()
+        values = self.monte_carlo_gpi.visits if self.show_visits else self.monte_carlo_gpi.action_values
+        self.env.show_info(get_info_string(self.partial_step, values, directions, delta))
+
+        # add an extra delay between each step if images are being generated
+        if self.create_images: sleep(2)
+        self.env.render()
+
+        if ((self.partial_step == self.max_partial_step) or self.convergence):
+          self.done = True
+
+          # reduce the max steps in case convergence has finished early
+          self.max_partial_step = self.partial_step
+
+    # add the initial state values or visits to the grid at partial_step = 0
+    directions = self.monte_carlo_gpi.policy.get_directions()
+    values = self.monte_carlo_gpi.visits if self.show_visits else self.monte_carlo_gpi.action_values
+    self.env.show_info(get_info_string(self.partial_step, values, directions))
     self.env.render()
 
     return self.show(on_update,**kwargs)

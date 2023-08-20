@@ -27,6 +27,23 @@ class Policy():
     ''' set the policy (i.e. the action to take in each state) '''
     self.directions = directions
 
+  def set_random_deterministic_policy(self):
+    ''' create a random, deterministic, policy 
+        - this is different from a stochastic policy in that each state has 
+        a single, defined, action rather than multiple possible actions        
+    '''
+    # calculate the directions of all states except the exit
+    directions = np.zeros((self.level.height,self.level.width),dtype=int)
+    end = self.level.end    
+    for y in range(self.level.height):
+      for x in range(self.level.width):
+        if (x != end[0]) or (y != end[1]):
+          available_actions = self.level.get_available_actions( x, y )
+          action = np.random.choice(available_actions)
+          direction = Direction.from_action(action)
+          directions[y][x] = direction
+    self.directions = directions
+
   def get_policy(self):
     return self.directions
 
